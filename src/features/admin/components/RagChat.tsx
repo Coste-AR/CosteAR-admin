@@ -37,13 +37,8 @@ export function RagChat() {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [activeSession?.messages, sendQuery.isPending]);
 
-  const handleNewSessionClick = async () => {
-    try {
-      const session = await createSession.mutateAsync();
-      setActiveSessionId(session.id);
-    } catch (err) {
-      toast.error('Error al crear nueva sesión');
-    }
+  const handleNewSessionClick = () => {
+    setActiveSessionId(null);
   };
 
   const handleAskClick = async () => {
@@ -127,7 +122,6 @@ export function RagChat() {
         <div className="p-5 border-b border-line bg-surface">
           <Button 
             onClick={handleNewSessionClick} 
-            disabled={createSession.isPending} 
             className="w-full bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl h-11 shadow-sm shadow-indigo-200/50 flex items-center justify-center gap-2 font-bold transition-all hover:scale-[1.02]"
           >
             <Plus className="w-5 h-5" />
