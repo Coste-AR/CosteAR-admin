@@ -5,7 +5,7 @@ import { CosteARLogo } from '@/components/layout/CosteARLogo';
 import { InteractiveDotGrid } from '@/components/layout/InteractiveDotGrid';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
-import { useRegister, type RegisterPayload, type ProfessionalType } from './auth-hooks';
+import { useRegister, useLogin, type RegisterPayload, type ProfessionalType } from './auth-hooks';
 import { apiErrorMessage, api } from '@/lib/api';
 import { cn } from '@/lib/utils';
 
@@ -56,6 +56,7 @@ const EMPTY: Draft = {
 export function RegisterPage() {
   const navigate = useNavigate();
   const register = useRegister();
+  const login = useLogin();
   const [step, setStep] = useState(0);
   const [draft, setDraft] = useState<Draft>(EMPTY);
   const [error, setError] = useState<string | null>(null);
@@ -144,7 +145,8 @@ export function RegisterPage() {
     };
     try {
       await register.mutateAsync(payload);
-      await navigate({ to: '/dashboard' });
+      await login.mutateAsync({ identifier: draft.email, password: draft.password });
+      navigate({ to: '/admin' });
     } catch (e) {
       const msg = apiErrorMessage(e);
       setError(msg);

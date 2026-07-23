@@ -39,11 +39,11 @@ export function ChangePasswordPage() {
     try {
       await setFirstPassword.mutateAsync(password);
       // Redirigir según el rol
-      if (user?.role === 'EMPRESA_OPERATOR') {
-        await navigate({ to: '/portal' });
-      } else {
-        await navigate({ to: '/dashboard' });
-      }
+        if (user?.role === 'ADMIN') {
+          navigate({ to: '/admin' });
+        } else {
+          navigate({ to: '/admin' });
+        }
     } catch (err) {
       setError(apiErrorMessage(err));
     }

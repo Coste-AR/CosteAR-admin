@@ -55,7 +55,7 @@ export function LoginPage() {
       } else if (result?.user?.role === 'ADMIN') {
         await navigate({ to: '/admin' });
       } else {
-        await navigate({ to: '/dashboard' });
+        await navigate({ to: '/admin' });
       }
     } catch (e) {
       const msg = apiErrorMessage(e);
