@@ -123,7 +123,7 @@ export function RagChat() {
     <div className="flex h-[calc(100vh-12rem)] max-w-6xl mx-auto bg-surface shadow-md border border-line rounded-[24px] overflow-hidden">
       
       {/* SIDEBAR: Sesiones */}
-      <div className="w-72 bg-surface-alt border-r border-line flex flex-col z-10 relative">
+      <div className="w-72 shrink-0 bg-surface-alt border-r border-line flex flex-col z-10 relative">
         <div className="p-5 border-b border-line bg-surface">
           <Button 
             onClick={handleNewSessionClick} 
@@ -159,7 +159,7 @@ export function RagChat() {
       </div>
 
       {/* CHAT AREA */}
-      <div className="flex-1 flex flex-col h-full bg-surface relative">
+      <div className="flex-1 flex flex-col h-full bg-surface relative min-w-0">
         <div className="bg-surface border-b border-line p-5 shrink-0 z-10 flex items-center justify-between shadow-[0_2px_10px_rgba(0,0,0,0.02)]">
           <div className="flex items-center gap-3">
             <div className="p-2 rounded-xl bg-indigo-50 text-indigo-600 border border-indigo-100/50">
@@ -190,8 +190,8 @@ export function RagChat() {
               }`}>
                 {msg.role === 'USER' ? '👤' : '🧠'}
               </div>
-              <div className={`space-y-2 max-w-[75%] ${msg.role === 'USER' ? 'items-end' : 'items-start'}`}>
-                <div className={`px-5 py-3.5 text-[14px] leading-relaxed whitespace-pre-wrap shadow-sm ${
+              <div className={`flex flex-col space-y-2 max-w-[75%] min-w-0 ${msg.role === 'USER' ? 'items-end' : 'items-start'}`}>
+                <div className={`px-5 py-3.5 text-[14px] leading-relaxed whitespace-pre-wrap break-words shadow-sm ${
                   msg.role === 'USER' 
                     ? 'bg-indigo-600 text-white rounded-2xl rounded-tr-sm border border-indigo-700' 
                     : 'bg-white text-ink rounded-2xl rounded-tl-sm border border-line'
@@ -213,7 +213,7 @@ export function RagChat() {
                     </strong>
                     <ul className="list-disc pl-5 space-y-1">
                       {msg.citations.map((cite: string, i: number) => (
-                        <li key={i} className="font-mono truncate opacity-80">{cite}</li>
+                        <li key={i} className="font-mono text-[10px] break-all opacity-80">{cite}</li>
                       ))}
                     </ul>
                   </div>
