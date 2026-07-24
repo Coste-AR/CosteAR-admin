@@ -1,9 +1,9 @@
 import { useAdminStats, useVaultIndexMutation } from '../admin-hooks';
 import { Card } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
-import { 
-  Users, Activity, Database, TrendingUp, DollarSign, 
-  Server, ShieldAlert, CheckCircle2, RefreshCw 
+import {
+  Users, Activity, Database,
+  Server, ShieldAlert, CheckCircle2, RefreshCw
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
@@ -11,9 +11,6 @@ export function AdminOverview() {
   const { data: stats } = useAdminStats();
   const { mutate: indexVault, isPending: isIndexing } = useVaultIndexMutation();
 
-  // Mocked MRR calculation based on total users for demo purposes
-  const mrr = (stats?.saas.totalUsers || 0) * 49.99; 
-  
   return (
     <div className="space-y-8 animate-in fade-in duration-500">
       
@@ -22,29 +19,7 @@ export function AdminOverview() {
         <h2 className="text-sm font-extrabold uppercase tracking-widest text-ink-soft mb-4 pl-1">
           Métricas de Negocio (SaaS)
         </h2>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
-          {/* MRR Card */}
-          <Card className="relative overflow-hidden p-6 border-line bg-surface hover:border-granate-tenue transition-colors group">
-            <div className="absolute -right-6 -top-6 size-24 rounded-full bg-emerald-500/10 blur-2xl group-hover:bg-emerald-500/20 transition-all" />
-            <div className="flex justify-between items-start mb-4 relative z-10">
-              <div className="p-2.5 rounded-xl bg-emerald-50 text-emerald-600">
-                <DollarSign className="size-5" />
-              </div>
-              <span className="flex items-center gap-1 text-[11px] font-bold text-emerald-600 bg-emerald-50 px-2 py-1 rounded-full">
-                +12.5% <TrendingUp className="size-3" />
-              </span>
-            </div>
-            <div className="relative z-10">
-              <p className="text-sm font-semibold text-ink-soft">Ingreso Recurrente (MRR)</p>
-              <div className="mt-1 flex items-baseline gap-2">
-                <span className="text-3xl font-black tracking-tight text-ink">
-                  {new Intl.NumberFormat('es-AR', { style: 'currency', currency: 'USD', maximumFractionDigits: 0 }).format(mrr)}
-                </span>
-                <span className="text-xs font-bold text-ink-soft">/mes</span>
-              </div>
-            </div>
-          </Card>
-
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
           {/* Users Card */}
           <Card className="relative overflow-hidden p-6 border-line bg-surface hover:border-granate-tenue transition-colors group">
             <div className="absolute -right-6 -top-6 size-24 rounded-full bg-indigo-500/10 blur-2xl group-hover:bg-indigo-500/20 transition-all" />
