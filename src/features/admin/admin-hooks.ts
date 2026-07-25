@@ -52,12 +52,16 @@ export function useVaultIndexMutation() {
         chunksSkippedUnchanged: number;
         chunksDeleted: number;
         filesWithErrors: string[];
+        debug: { vaultPath: string; hadGitFolder: boolean; vaultCommit: string; totalFilesFound: number };
       };
     },
     onSuccess: (result) => {
       queryClient.invalidateQueries({ queryKey: ['admin-stats'] });
       toast.success(
-        `Reindexado: ${result.chunksUpserted} chunks nuevos/actualizados, ${result.chunksSkippedUnchanged} sin cambios.`,
+        `Reindexado: ${result.chunksUpserted} nuevos, ${result.chunksSkippedUnchanged} sin cambios. ` +
+          `Encontró ${result.debug.totalFilesFound} archivo(s) en ${result.debug.vaultPath} ` +
+          `(¿tenía .git?: ${result.debug.hadGitFolder ? 'sí' : 'NO'}, commit: ${result.debug.vaultCommit}).`,
+        { duration: 15000 },
       );
     },
     onError: (err) => {
