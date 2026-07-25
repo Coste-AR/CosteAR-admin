@@ -1,5 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { api } from '@/lib/api';
+import toast from 'react-hot-toast';
+import { api, apiErrorMessage } from '@/lib/api';
 
 export interface VaultQueryResult {
   answer: string;
@@ -45,11 +46,27 @@ export function useVaultIndexMutation() {
   return useMutation({
     mutationFn: async () => {
       const res = await api.post('/vault/index');
-      return res.data;
+      return res.data.data as {
+        filesProcessed: number;
+        chunksUpserted: number;
+        chunksSkippedUnchanged: number;
+        chunksDeleted: number;
+        filesWithErrors: string[];
+      };
     },
-    onSuccess: () => {
+    onSuccess: (result) => {
       queryClient.invalidateQueries({ queryKey: ['admin-stats'] });
-    }
+      toast.success(
+        `Reindexado: ${result.chunksUpserted} chunks nuevos/actualizados, ${result.chunksSkippedUnchanged} sin cambios.`,
+      );
+    },
+    onError: (err) => {
+      // El indexado puede tardar varios minutos (rate limit de Voyage sin
+      // billing: 3 req/min). Si falla, mostrar el motivo real en vez de
+      // dejar el botón sin ningún feedback — el reintento retoma desde donde
+      // quedó (los chunks ya guardados no se vuelven a embedear).
+      toast.error(`No se pudo reindexar: ${apiErrorMessage(err)}`, { duration: 8000 });
+    },
   });
 }
 
