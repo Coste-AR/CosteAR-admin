@@ -44,8 +44,8 @@ export function useVaultFeedbackMutation() {
 export function useVaultIndexMutation() {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: async () => {
-      const res = await api.post('/vault/index');
+    mutationFn: async (options?: { forceClone?: boolean }) => {
+      const res = await api.post('/vault/index', options ?? {});
       return res.data.data as {
         filesProcessed: number;
         chunksUpserted: number;

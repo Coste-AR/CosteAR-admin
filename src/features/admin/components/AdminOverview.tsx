@@ -80,16 +80,35 @@ export function AdminOverview() {
             <div className="flex-1">
               <div className="flex items-center justify-between">
                 <p className="text-sm font-semibold text-ink-soft">Volumen de la Bóveda</p>
-                <Button 
-                  variant="ghost" 
-                  size="sm" 
-                  onClick={() => indexVault()} 
-                  disabled={isIndexing}
-                  className="h-7 text-[10px] uppercase font-bold text-ink-soft hover:text-blue-600 bg-blue-50/50"
-                >
-                  <RefreshCw className={cn("size-3 mr-1.5", isIndexing && "animate-spin")} />
-                  {isIndexing ? 'Indexando...' : 'Re-indexar Manual'}
-                </Button>
+                <div className="flex items-center gap-2">
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => indexVault(undefined)}
+                    disabled={isIndexing}
+                    className="h-7 text-[10px] uppercase font-bold text-ink-soft hover:text-blue-600 bg-blue-50/50"
+                  >
+                    <RefreshCw className={cn("size-3 mr-1.5", isIndexing && "animate-spin")} />
+                    {isIndexing ? 'Indexando...' : 'Re-indexar Manual'}
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => {
+                      if (window.confirm(
+                        'Esto borra el checkout local de la bóveda por completo y clona de cero desde GitHub, ' +
+                          'aunque no tenga nada que parezca "roto". Usalo solo si el volumen de chunks quedó pegado ' +
+                          'en un número bajo sin explicación (ej. la carpeta nunca se clonó bien). ¿Continuar?',
+                      )) {
+                        indexVault({ forceClone: true });
+                      }
+                    }}
+                    disabled={isIndexing}
+                    className="h-7 text-[10px] uppercase font-bold text-red-600 hover:text-red-700 bg-red-50/50"
+                  >
+                    Forzar re-clone completo
+                  </Button>
+                </div>
               </div>
               <div className="flex items-end gap-2 mt-1">
                 <span className="text-2xl font-black text-ink">{stats?.vault.totalChunks ?? '-'}</span>
