@@ -8,7 +8,18 @@ import { router } from './router';
 import { API_BASE, refreshAccessToken } from './lib/api';
 import { useAuthStore, getStoredRefreshToken, type AuthUser } from './stores/auth-store';
 import { CosteARLoadingScreen } from './components/layout/CosteARLoadingScreen';
+import * as Sentry from '@sentry/react';
 import './index.css';
+
+if (import.meta.env.VITE_SENTRY_DSN) {
+  Sentry.init({
+    dsn: import.meta.env.VITE_SENTRY_DSN,
+    integrations: [Sentry.browserTracingIntegration(), Sentry.replayIntegration()],
+    tracesSampleRate: 1.0,
+    replaysSessionSampleRate: 0.1,
+    replaysOnErrorSampleRate: 1.0,
+  });
+}
 
 const queryClient = new QueryClient({
   defaultOptions: {
