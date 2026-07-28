@@ -1,3 +1,5 @@
+import { useState } from 'react';
+import { ConfirmDialog } from '@/components/ui/ConfirmDialog';
 import { useAdminStats, useVaultIndexMutation } from '../admin-hooks';
 import { Card } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
@@ -10,6 +12,8 @@ import { cn } from '@/lib/utils';
 export function AdminOverview() {
   const { data: stats } = useAdminStats();
   const { mutate: indexVault, isPending: isIndexing } = useVaultIndexMutation();
+
+  const [showConfirm, setShowConfirm] = useState(false);
 
   return (
     <div className="space-y-8 animate-in fade-in duration-500">
@@ -94,15 +98,7 @@ export function AdminOverview() {
                   <Button
                     variant="ghost"
                     size="sm"
-                    onClick={() => {
-                      if (window.confirm(
-                        'Esto borra el checkout local de la bóveda por completo y clona de cero desde GitHub, ' +
-                          'aunque no tenga nada que parezca "roto". Usalo solo si el volumen de chunks quedó pegado ' +
-                          'en un número bajo sin explicación (ej. la carpeta nunca se clonó bien). ¿Continuar?',
-                      )) {
-                        indexVault({ forceClone: true });
-                      }
-                    }}
+                    onClick={() => setShowConfirm(true)}
                     disabled={isIndexing}
                     className="h-7 text-[10px] uppercase font-bold text-red-600 hover:text-red-700 bg-red-50/50"
                   >
@@ -166,6 +162,20 @@ export function AdminOverview() {
         </div>
       </div>
 
+      <ConfirmDialog
+        open={showConfirm}
+        title="Forzar re-clone completo"
+        message="Esto borra el checkout local de la bóveda por completo y clona de cero desde GitHub, aunque no tenga nada que parezca 'roto'. Usalo solo si el volumen de chunks quedó pegado en un número bajo sin explicación (ej. la carpeta nunca se clonó bien). ¿Continuar?"
+        confirmLabel="Sí, forzar clonado"
+        tone="danger"
+        loading={isIndexing}
+        onConfirm={() => {
+          indexVault({ forceClone: true }, {
+            onSettled: () => setShowConfirm(false)
+          });
+        }}
+        onCancel={() => setShowConfirm(false)}
+      />
     </div>
   );
 }
