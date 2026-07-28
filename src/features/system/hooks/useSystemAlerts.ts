@@ -1,4 +1,5 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { api } from '@/lib/api';
 
 interface SystemAlert {
   id: string;
@@ -15,15 +16,10 @@ export function useSystemAlerts(unresolvedOnly = true) {
   return useQuery({
     queryKey: ['system-alerts', { unresolvedOnly }],
     queryFn: async (): Promise<SystemAlert[]> => {
-      const res = await fetch(`/api/system-alerts?unresolvedOnly=${unresolvedOnly}`, {
-        headers: {
-          Authorization: `Bearer ${localStorage.getItem('admin_token') || ''}`,
-        },
-      });
-      if (!res.ok) throw new Error('Failed to fetch system alerts');
-      return res.json();
+      const { data } = await api.get(`/system-alerts?unresolvedOnly=${unresolvedOnly}`);
+      return data;
     },
-    refetchInterval: 10000, // Auto-refresh every 10 seconds
+    refetchInterval: 10000,
   });
 }
 
@@ -32,14 +28,8 @@ export function useResolveSystemAlert() {
 
   return useMutation({
     mutationFn: async (id: string) => {
-      const res = await fetch(`/api/system-alerts/${id}/resolve`, {
-        method: 'POST',
-        headers: {
-          Authorization: `Bearer ${localStorage.getItem('admin_token') || ''}`,
-        },
-      });
-      if (!res.ok) throw new Error('Failed to resolve alert');
-      return res.json();
+      const { data } = await api.post(`/system-alerts/${id}/resolve`);
+      return data;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['system-alerts'] });
