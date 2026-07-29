@@ -5,19 +5,26 @@ import { Card } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 import {
   Users, Activity, Database,
-  Server, ShieldAlert, CheckCircle2, RefreshCw
+  Server, ShieldAlert, CheckCircle2, RefreshCw, AlertTriangle
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 export function AdminOverview() {
-  const { data: stats } = useAdminStats();
+  const { data: stats, isError } = useAdminStats();
   const { mutate: indexVault, isPending: isIndexing } = useVaultIndexMutation();
 
   const [showConfirm, setShowConfirm] = useState(false);
 
   return (
     <div className="space-y-8 animate-in fade-in duration-500">
-      
+
+      {isError && (
+        <div className="p-4 bg-red-50 text-red-600 rounded-lg flex gap-2">
+          <AlertTriangle className="w-5 h-5 shrink-0" />
+          <p>No se pudieron cargar las estadísticas del sistema. Los valores mostrados abajo no son confiables.</p>
+        </div>
+      )}
+
       {/* Sección 1: Business Metrics (SaaS) */}
       <div>
         <h2 className="text-sm font-extrabold uppercase tracking-widest text-ink-soft mb-4 pl-1">
@@ -78,7 +85,11 @@ export function AdminOverview() {
             <div className="relative shrink-0 flex items-center justify-center size-16 rounded-full bg-blue-50 text-blue-600 border border-blue-100">
               <Database className="size-7" />
               <div className="absolute -bottom-1 -right-1 size-5 bg-white rounded-full flex items-center justify-center shadow-sm border border-line">
-                <CheckCircle2 className="size-3.5 text-emerald-500" />
+                {isError ? (
+                  <ShieldAlert className="size-3.5 text-red-500" />
+                ) : (
+                  <CheckCircle2 className="size-3.5 text-emerald-500" />
+                )}
               </div>
             </div>
             <div className="flex-1">
@@ -110,9 +121,15 @@ export function AdminOverview() {
                 <span className="text-2xl font-black text-ink">{stats?.vault.totalChunks ?? '-'}</span>
                 <span className="text-xs font-bold text-ink-soft mb-1">fragmentos indexados (chunks)</span>
               </div>
-              <p className="text-[11px] font-medium text-emerald-600 mt-2 flex items-center gap-1">
-                <CheckCircle2 className="size-3" /> Base de datos vectorial en línea y sincronizada
-              </p>
+              {isError ? (
+                <p className="text-[11px] font-medium text-red-600 mt-2 flex items-center gap-1">
+                  <ShieldAlert className="size-3" /> No se pudo verificar el estado de la bóveda
+                </p>
+              ) : (
+                <p className="text-[11px] font-medium text-emerald-600 mt-2 flex items-center gap-1">
+                  <CheckCircle2 className="size-3" /> Base de datos vectorial en línea y sincronizada
+                </p>
+              )}
             </div>
           </Card>
 

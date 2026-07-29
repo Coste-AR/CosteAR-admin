@@ -17,7 +17,7 @@ interface LoginForm {
 
 /** True si el valor parece ser un CUIT/CUIL (solo dígitos y guiones, sin letras). */
 function looksLikeCuit(val: string): boolean {
-  return /^[\d\-]+$/.test(val);
+  return /^[\d-]+$/.test(val);
 }
 
 /** Formatea dígitos a XX-XXXXXXXX-X mientras se escribe. */

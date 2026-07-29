@@ -6,7 +6,7 @@ import { Toaster } from 'react-hot-toast';
 import axios from 'axios';
 import { router } from './router';
 import { API_BASE, refreshAccessToken } from './lib/api';
-import { useAuthStore, getStoredRefreshToken, type AuthUser } from './stores/auth-store';
+import { useAuthStore, type AuthUser } from './stores/auth-store';
 import { CosteARLoadingScreen } from './components/layout/CosteARLoadingScreen';
 import * as Sentry from '@sentry/react';
 import './index.css';
@@ -65,9 +65,6 @@ function AuthBootstrap({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     (async () => {
       try {
-        const storedRt = getStoredRefreshToken();
-        if (!storedRt) { setInitialized(); return; }
-
         // Pasa por el refresh deduplicado de api.ts: en StrictMode este efecto
         // corre dos veces seguidas, y sin este singleton cada corrida dispara
         // su propia llamada a /auth/refresh con el mismo refresh token, lo que

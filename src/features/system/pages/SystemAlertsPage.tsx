@@ -9,6 +9,11 @@ export function SystemAlertsPage() {
   const { data: alerts, isLoading, isError, refetch, isFetching } = useSystemAlerts(unresolvedOnly);
   const { mutate: resolveAlert, isPending: isResolving } = useResolveSystemAlert();
 
+  // Defensa en profundidad: el backend ya sanitiza sentryUrl, pero esto además
+  // protege contra alertas viejas guardadas antes del fix (o cualquier otra
+  // fuente futura de 'source') que pudieran traer un esquema no-http (javascript:, data:, etc.).
+  const safeUrl = (url?: string | null) => (url && /^https?:\/\//i.test(url) ? url : undefined);
+
   const getBadgeColor = (level: string) => {
     switch (level) {
       case 'fatal':
@@ -95,8 +100,8 @@ export function SystemAlertsPage() {
                   </span>
                 </td>
                 <td className="px-6 py-4 text-right space-x-2 whitespace-nowrap flex justify-end gap-2 items-center h-full">
-                  {alert.sentryUrl && (
-                    <a href={alert.sentryUrl} target="_blank" rel="noreferrer">
+                  {safeUrl(alert.sentryUrl) && (
+                    <a href={safeUrl(alert.sentryUrl)} target="_blank" rel="noreferrer noopener">
                       <Button variant="ghost" size="sm">
                         <ExternalLink className="w-4 h-4 mr-1" /> Sentry
                       </Button>
