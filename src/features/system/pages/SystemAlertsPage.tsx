@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useSystemAlerts, useResolveSystemAlert } from '../hooks/useSystemAlerts';
 import { Button } from '../../../components/ui/Button';
 import { AlertTriangle, ExternalLink, CheckCircle, RefreshCcw } from 'lucide-react';
+import { AppShell } from '../../../components/layout/AppShell';
 
 export function SystemAlertsPage() {
   const [unresolvedOnly, setUnresolvedOnly] = useState(true);
@@ -22,7 +23,8 @@ export function SystemAlertsPage() {
   };
 
   return (
-    <div className="p-8 max-w-7xl mx-auto">
+    <AppShell wide>
+      <div className="p-8 max-w-7xl mx-auto">
       <div className="flex justify-between items-center mb-6">
         <div>
           <h1 className="text-3xl font-bold text-gray-900 flex items-center gap-2">
@@ -119,6 +121,7 @@ export function SystemAlertsPage() {
           </tbody>
         </table>
       </div>
-    </div>
+      </div>
+    </AppShell>
   );
 }
