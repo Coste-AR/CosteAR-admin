@@ -2,11 +2,17 @@ import { useState } from 'react';
 import { useSystemAlerts, useResolveSystemAlert } from '../hooks/useSystemAlerts';
 import { Button } from '../../../components/ui/Button';
 import { AlertTriangle, ExternalLink, CheckCircle, RefreshCcw } from 'lucide-react';
+import { AppShell } from '../../../components/layout/AppShell';
 
 export function SystemAlertsPage() {
   const [unresolvedOnly, setUnresolvedOnly] = useState(true);
   const { data: alerts, isLoading, isError, refetch, isFetching } = useSystemAlerts(unresolvedOnly);
   const { mutate: resolveAlert, isPending: isResolving } = useResolveSystemAlert();
+
+  // Defensa en profundidad: el backend ya sanitiza sentryUrl, pero esto además
+  // protege contra alertas viejas guardadas antes del fix (o cualquier otra
+  // fuente futura de 'source') que pudieran traer un esquema no-http (javascript:, data:, etc.).
+  const safeUrl = (url?: string | null) => (url && /^https?:\/\//i.test(url) ? url : undefined);
 
   const getBadgeColor = (level: string) => {
     switch (level) {
@@ -22,7 +28,8 @@ export function SystemAlertsPage() {
   };
 
   return (
-    <div className="p-8 max-w-7xl mx-auto">
+    <AppShell wide>
+      <div className="p-8 max-w-7xl mx-auto">
       <div className="flex justify-between items-center mb-6">
         <div>
           <h1 className="text-3xl font-bold text-gray-900 flex items-center gap-2">
@@ -93,8 +100,8 @@ export function SystemAlertsPage() {
                   </span>
                 </td>
                 <td className="px-6 py-4 text-right space-x-2 whitespace-nowrap flex justify-end gap-2 items-center h-full">
-                  {alert.sentryUrl && (
-                    <a href={alert.sentryUrl} target="_blank" rel="noreferrer">
+                  {safeUrl(alert.sentryUrl) && (
+                    <a href={safeUrl(alert.sentryUrl)} target="_blank" rel="noreferrer noopener">
                       <Button variant="ghost" size="sm">
                         <ExternalLink className="w-4 h-4 mr-1" /> Sentry
                       </Button>
@@ -119,6 +126,7 @@ export function SystemAlertsPage() {
           </tbody>
         </table>
       </div>
-    </div>
+      </div>
+    </AppShell>
   );
 }

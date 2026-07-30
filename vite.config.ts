@@ -14,4 +14,14 @@ export default defineConfig({
       '/api': { target: 'http://localhost:3000', changeOrigin: true },
     },
   },
+  test: {
+    globals: true,
+    environment: 'node',
+    // tests/e2e.spec.ts es de Playwright, no de Vitest — si vitest intenta
+    // correrlo falla con "test.describe() no esperado acá". Y todavía no hay
+    // tests unitarios en este repo, así que sin passWithNoTests el comando
+    // "test" fallaría por no encontrar nada — mejor eso que volver a taparlo.
+    include: ['src/**/*.test.{ts,tsx}'],
+    passWithNoTests: true,
+  },
 });

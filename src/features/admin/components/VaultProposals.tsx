@@ -44,6 +44,7 @@ export function VaultProposals() {
       setEditingId(null);
       setDraft({});
     } catch (err) {
+      console.error('[vault-proposals] Error al guardar edición:', err);
       toast.error('No se pudieron guardar los cambios.');
     }
   };

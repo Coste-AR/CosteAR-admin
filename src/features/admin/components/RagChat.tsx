@@ -53,6 +53,7 @@ export function RagChat() {
         sessionIdToUse = newSession.id;
         setActiveSessionId(newSession.id);
       } catch (err) {
+        console.error('[rag-chat] Error al crear sesión:', err);
         toast.error('Error al iniciar la sesión');
         return;
       }
@@ -64,6 +65,7 @@ export function RagChat() {
     try {
       await sendQuery.mutateAsync({ sessionId: sessionIdToUse, question: currentQuestion });
     } catch (err) {
+      console.error('[rag-chat] Error al consultar la bóveda:', err);
       toast.error('Error al consultar la bóveda');
       // Put question back if failed
       setQuestion(currentQuestion);
@@ -95,6 +97,7 @@ export function RagChat() {
             setQuestion((prev) => prev + (prev ? ' ' : '') + result.text);
           }
         } catch (err) {
+          console.error('[rag-chat] Error al transcribir el audio:', err);
           toast.error('Error al transcribir el audio');
         }
       };
