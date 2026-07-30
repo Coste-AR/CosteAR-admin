@@ -7,6 +7,7 @@ import {
   Users as UsersIcon,
   MessageSquareText,
   AlertTriangle,
+  ScrollText,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useLogout } from "@/features/auth/auth-hooks";
@@ -19,6 +20,7 @@ const NAV = [
   { to: "/admin/vault", label: "Entrenamiento Bóveda", icon: FileCheck2 },
   { to: "/admin/chat", label: "Consola IA", icon: MessageSquareText },
   { to: "/admin/system-alerts", label: "Alertas", icon: AlertTriangle },
+  { to: "/admin/terms", label: "Términos y Condiciones", icon: ScrollText },
 ] as const;
 
 function isNavActive(pathname: string, item: (typeof NAV)[number]): boolean {
