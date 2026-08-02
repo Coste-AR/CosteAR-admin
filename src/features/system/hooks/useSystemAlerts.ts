@@ -1,13 +1,20 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { api } from '@/lib/api';
 
-interface SystemAlert {
+export interface SystemAlert {
   id: string;
   source: string;
   level: string;
   message: string;
   sentryIssueId: string | null;
   sentryUrl: string | null;
+  culprit: string | null;
+  errorType: string | null;
+  errorValue: string | null;
+  occurrenceCount: number | null;
+  firstSeenAt: string | null;
+  lastSeenAt: string | null;
+  platform: string | null;
   resolvedAt: string | null;
   createdAt: string;
 }
