@@ -30,15 +30,15 @@ export function SystemAlertsPage() {
 
   return (
     <AppShell wide>
-      <div className="p-8 max-w-7xl mx-auto">
-      <div className="flex justify-between items-center mb-6">
+      <div className="p-4 sm:p-8 max-w-7xl mx-auto">
+      <div className="flex flex-col gap-4 mb-6 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900 flex items-center gap-2">
-            <AlertTriangle className="text-orange-500" /> Alertas de Sistema (Sentry)
+          <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 flex items-center gap-2">
+            <AlertTriangle className="text-orange-500 shrink-0" /> Alertas de Sistema (Sentry)
           </h1>
-          <p className="text-gray-500 mt-1">Monitoreo en tiempo real de errores críticos y excepciones en producción.</p>
+          <p className="text-gray-500 mt-1 text-sm">Monitoreo en tiempo real de errores críticos y excepciones en producción.</p>
         </div>
-        <div className="flex gap-4">
+        <div className="flex flex-wrap gap-3 sm:gap-4">
           <Button variant="secondary" onClick={() => setUnresolvedOnly(!unresolvedOnly)}>
             {unresolvedOnly ? 'Ver todas (Incluir resueltas)' : 'Ver solo pendientes'}
           </Button>
@@ -48,104 +48,161 @@ export function SystemAlertsPage() {
         </div>
       </div>
 
-      <div className="bg-white rounded-xl shadow border border-line/40 overflow-hidden">
-        <table className="w-full text-left border-collapse">
-          <thead>
-            <tr className="bg-surface border-b border-line/40 text-ink-soft text-sm uppercase tracking-wider">
-              <th className="px-3 py-4" />
-              <th className="px-6 py-4 font-semibold">Fecha</th>
-              <th className="px-6 py-4 font-semibold">Nivel</th>
-              <th className="px-6 py-4 font-semibold">Mensaje</th>
-              <th className="px-6 py-4 font-semibold">Origen</th>
-              <th className="px-6 py-4 font-semibold text-right">Acciones</th>
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-line/20">
-            {isLoading && (
-              <tr>
-                <td colSpan={6} className="text-center py-8 text-gray-500">
-                  Cargando alertas...
-                </td>
-              </tr>
-            )}
-            {isError && (
-              <tr>
-                <td colSpan={6} className="text-center py-8 text-danger">
-                  Error al cargar las alertas.
-                </td>
-              </tr>
-            )}
-            {alerts?.length === 0 && (
-              <tr>
-                <td colSpan={6} className="text-center py-12 text-gray-500">
-                  <CheckCircle className="w-12 h-12 mx-auto text-green-500 mb-3 opacity-50" />
-                  No hay alertas pendientes. ¡El sistema está saludable!
-                </td>
-              </tr>
-            )}
-            {alerts?.map((alert) => {
+      {isLoading && <p className="text-center py-8 text-gray-500">Cargando alertas...</p>}
+      {isError && <p className="text-center py-8 text-danger">Error al cargar las alertas.</p>}
+      {!isLoading && !isError && alerts?.length === 0 && (
+        <div className="text-center py-12 text-gray-500 bg-white rounded-xl shadow border border-line/40">
+          <CheckCircle className="w-12 h-12 mx-auto text-green-500 mb-3 opacity-50" />
+          No hay alertas pendientes. ¡El sistema está saludable!
+        </div>
+      )}
+
+      {!isLoading && !isError && alerts && alerts.length > 0 && (
+        <>
+          {/* Tabla: solo desde lg, es la única forma de que 6 columnas entren sin scroll */}
+          <div className="hidden lg:block bg-white rounded-xl shadow border border-line/40 overflow-hidden">
+            <table className="w-full text-left border-collapse">
+              <thead>
+                <tr className="bg-surface border-b border-line/40 text-ink-soft text-sm uppercase tracking-wider">
+                  <th className="px-3 py-4" />
+                  <th className="px-6 py-4 font-semibold">Fecha</th>
+                  <th className="px-6 py-4 font-semibold">Nivel</th>
+                  <th className="px-6 py-4 font-semibold">Mensaje</th>
+                  <th className="px-6 py-4 font-semibold">Origen</th>
+                  <th className="px-6 py-4 font-semibold text-right">Acciones</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-line/20">
+                {alerts.map((alert) => {
+                  const expanded = expandedId === alert.id;
+                  return (
+                    <Fragment key={alert.id}>
+                      <tr
+                        onClick={() => setExpandedId(expanded ? null : alert.id)}
+                        className={`hover:bg-surface-alt transition-colors cursor-pointer ${alert.resolvedAt ? 'opacity-60 bg-surface' : ''}`}
+                      >
+                        <td className="px-3 py-4 text-ink-soft">
+                          {expanded ? <ChevronDown className="w-4 h-4" /> : <ChevronRight className="w-4 h-4" />}
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-ink-soft">
+                          {new Date(alert.createdAt).toLocaleString()}
+                        </td>
+                        <td className="px-6 py-4">
+                          <span className={`px-2.5 py-1 rounded-full text-xs font-bold uppercase tracking-wide ${getBadgeColor(alert.level)}`}>
+                            {alert.level}
+                          </span>
+                        </td>
+                        <td className="px-6 py-4 font-medium text-ink max-w-md truncate" title={alert.message}>
+                          {alert.message}
+                        </td>
+                        <td className="px-6 py-4">
+                          <span className="px-2.5 py-1 rounded-full text-xs font-medium border border-line/60 text-ink-soft">
+                            {alert.source}
+                          </span>
+                        </td>
+                        <td className="px-6 py-4 text-right space-x-2 whitespace-nowrap flex justify-end gap-2 items-center h-full" onClick={(e) => e.stopPropagation()}>
+                          {safeUrl(alert.sentryUrl) && (
+                            <a href={safeUrl(alert.sentryUrl)} target="_blank" rel="noreferrer noopener">
+                              <Button variant="ghost" size="sm">
+                                <ExternalLink className="w-4 h-4 mr-1" /> Sentry
+                              </Button>
+                            </a>
+                          )}
+                          {!alert.resolvedAt && (
+                            <Button
+                              variant="primary"
+                              size="sm"
+                              onClick={() => resolveAlert(alert.id)}
+                              disabled={isResolving}
+                            >
+                              <CheckCircle className="w-4 h-4 mr-1" /> Resolver
+                            </Button>
+                          )}
+                          {alert.resolvedAt && (
+                            <span className="text-xs text-green-600 font-bold px-3 py-1 bg-green-50 rounded-full">Resuelta</span>
+                          )}
+                        </td>
+                      </tr>
+                      {expanded && (
+                        <tr className="bg-surface-alt/60">
+                          <td colSpan={6} className="px-6 py-5">
+                            <AlertDetail alert={alert} />
+                          </td>
+                        </tr>
+                      )}
+                    </Fragment>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
+
+          {/* Tarjetas: debajo de lg, cada alerta es su propia tarjeta expandible */}
+          <div className="lg:hidden space-y-3">
+            {alerts.map((alert) => {
               const expanded = expandedId === alert.id;
               return (
-              <Fragment key={alert.id}>
-                <tr
-                  onClick={() => setExpandedId(expanded ? null : alert.id)}
-                  className={`hover:bg-surface-alt transition-colors cursor-pointer ${alert.resolvedAt ? 'opacity-60 bg-surface' : ''}`}
+                <div
+                  key={alert.id}
+                  className={`bg-white rounded-xl shadow border border-line/40 overflow-hidden ${alert.resolvedAt ? 'opacity-60' : ''}`}
                 >
-                  <td className="px-3 py-4 text-ink-soft">
-                    {expanded ? <ChevronDown className="w-4 h-4" /> : <ChevronRight className="w-4 h-4" />}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-ink-soft">
-                    {new Date(alert.createdAt).toLocaleString()}
-                  </td>
-                  <td className="px-6 py-4">
-                    <span className={`px-2.5 py-1 rounded-full text-xs font-bold uppercase tracking-wide ${getBadgeColor(alert.level)}`}>
-                      {alert.level}
-                    </span>
-                  </td>
-                  <td className="px-6 py-4 font-medium text-ink max-w-md truncate" title={alert.message}>
-                    {alert.message}
-                  </td>
-                  <td className="px-6 py-4">
-                    <span className="px-2.5 py-1 rounded-full text-xs font-medium border border-line/60 text-ink-soft">
-                      {alert.source}
-                    </span>
-                  </td>
-                  <td className="px-6 py-4 text-right space-x-2 whitespace-nowrap flex justify-end gap-2 items-center h-full" onClick={(e) => e.stopPropagation()}>
-                    {safeUrl(alert.sentryUrl) && (
-                      <a href={safeUrl(alert.sentryUrl)} target="_blank" rel="noreferrer noopener">
-                        <Button variant="ghost" size="sm">
-                          <ExternalLink className="w-4 h-4 mr-1" /> Sentry
-                        </Button>
-                      </a>
+                  <button
+                    type="button"
+                    onClick={() => setExpandedId(expanded ? null : alert.id)}
+                    className="w-full text-left px-4 py-3.5 flex items-start gap-3"
+                  >
+                    {expanded ? (
+                      <ChevronDown className="w-4 h-4 mt-1 shrink-0 text-ink-soft" />
+                    ) : (
+                      <ChevronRight className="w-4 h-4 mt-1 shrink-0 text-ink-soft" />
                     )}
-                    {!alert.resolvedAt && (
-                      <Button
-                        variant="primary"
-                        size="sm"
-                        onClick={() => resolveAlert(alert.id)}
-                        disabled={isResolving}
-                      >
-                        <CheckCircle className="w-4 h-4 mr-1" /> Resolver
-                      </Button>
-                    )}
-                    {alert.resolvedAt && (
-                      <span className="text-xs text-green-600 font-bold px-3 py-1 bg-green-50 rounded-full">Resuelta</span>
-                    )}
-                  </td>
-                </tr>
-                {expanded && (
-                  <tr className="bg-surface-alt/60">
-                    <td colSpan={6} className="px-6 py-5">
+                    <div className="min-w-0 flex-1">
+                      <div className="flex items-center gap-2 flex-wrap">
+                        <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wide ${getBadgeColor(alert.level)}`}>
+                          {alert.level}
+                        </span>
+                        <span className="px-2 py-0.5 rounded-full text-[10px] font-medium border border-line/60 text-ink-soft">
+                          {alert.source}
+                        </span>
+                        {alert.resolvedAt && (
+                          <span className="text-[10px] text-green-600 font-bold px-2 py-0.5 bg-green-50 rounded-full">Resuelta</span>
+                        )}
+                      </div>
+                      <p className="font-medium text-ink text-sm mt-1.5 break-words">{alert.message}</p>
+                      <p className="text-xs text-ink-soft mt-1">{new Date(alert.createdAt).toLocaleString()}</p>
+                    </div>
+                  </button>
+
+                  {expanded && (
+                    <div className="border-t border-line/40 bg-surface-alt/60 px-4 py-4 space-y-4">
                       <AlertDetail alert={alert} />
-                    </td>
-                  </tr>
-                )}
-              </Fragment>
+                      <div className="flex flex-wrap gap-2 pt-1">
+                        {safeUrl(alert.sentryUrl) && (
+                          <a href={safeUrl(alert.sentryUrl)} target="_blank" rel="noreferrer noopener">
+                            <Button variant="ghost" size="sm">
+                              <ExternalLink className="w-4 h-4 mr-1" /> Sentry
+                            </Button>
+                          </a>
+                        )}
+                        {!alert.resolvedAt && (
+                          <Button
+                            variant="primary"
+                            size="sm"
+                            onClick={() => resolveAlert(alert.id)}
+                            disabled={isResolving}
+                          >
+                            <CheckCircle className="w-4 h-4 mr-1" /> Resolver
+                          </Button>
+                        )}
+                      </div>
+                    </div>
+                  )}
+                </div>
               );
             })}
-          </tbody>
-        </table>
-      </div>
+          </div>
+        </>
+      )}
       </div>
     </AppShell>
   );
