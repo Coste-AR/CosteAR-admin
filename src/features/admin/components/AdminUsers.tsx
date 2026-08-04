@@ -95,52 +95,75 @@ export function AdminUsers() {
       <Card className="overflow-hidden border-line bg-surface">
         {isLoading ? (
           <div className="p-8 text-center text-ink-soft font-medium animate-pulse">Cargando personal...</div>
+        ) : displayedUsers.length === 0 ? (
+          <div className="px-6 py-12 text-center text-ink-soft font-medium">No hay usuarios en esta categoría.</div>
         ) : (
-          <div className="overflow-x-auto">
-            <table className="w-full text-sm text-left">
-              <thead className="bg-surface-alt text-ink-soft font-bold uppercase tracking-wider text-[10px] border-b border-line">
-                <tr>
-                  <th className="px-6 py-4">Usuario</th>
-                  <th className="px-6 py-4">Rol</th>
-                  <th className="px-6 py-4">Fecha Creación</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-line">
-                {displayedUsers.map((user: any) => (
-                  <tr key={user.id} className="hover:bg-black/5 transition-colors group">
-                    <td className="px-6 py-4">
-                      <div className="flex items-center gap-3">
-                        <div className="flex size-8 shrink-0 items-center justify-center rounded-full bg-indigo-100 text-[11px] font-extrabold text-indigo-700 border border-indigo-200">
-                          {user.name?.[0]?.toUpperCase()}
+          <>
+            {/* Tabla: solo desde md hacia arriba, tiene lugar para las 3 columnas */}
+            <div className="hidden overflow-x-auto md:block">
+              <table className="w-full text-sm text-left">
+                <thead className="bg-surface-alt text-ink-soft font-bold uppercase tracking-wider text-[10px] border-b border-line">
+                  <tr>
+                    <th className="px-6 py-4">Usuario</th>
+                    <th className="px-6 py-4">Rol</th>
+                    <th className="px-6 py-4">Fecha Creación</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-line">
+                  {displayedUsers.map((user: any) => (
+                    <tr key={user.id} className="hover:bg-black/5 transition-colors group">
+                      <td className="px-6 py-4">
+                        <div className="flex items-center gap-3">
+                          <div className="flex size-8 shrink-0 items-center justify-center rounded-full bg-indigo-100 text-[11px] font-extrabold text-indigo-700 border border-indigo-200">
+                            {user.name?.[0]?.toUpperCase()}
+                          </div>
+                          <div>
+                            <div className="font-bold text-ink group-hover:text-indigo-600 transition-colors">{user.name}</div>
+                            <div className="text-ink-soft text-xs font-medium">{user.email}</div>
+                          </div>
                         </div>
-                        <div>
-                          <div className="font-bold text-ink group-hover:text-indigo-600 transition-colors">{user.name}</div>
-                          <div className="text-ink-soft text-xs font-medium">{user.email}</div>
-                        </div>
-                      </div>
-                    </td>
-                    <td className="px-6 py-4">
-                      <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wide
+                      </td>
+                      <td className="px-6 py-4">
+                        <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wide
+                          ${user.role === 'ADMIN' ? 'bg-indigo-50 text-indigo-700 border border-indigo-200/50' : 'bg-emerald-50 text-emerald-700 border border-emerald-200/50'}`}>
+                          {user.role === 'ADMIN' ? <ShieldCheck className="size-3.5" /> : <UsersIcon className="size-3.5" />}
+                          {user.role}
+                        </span>
+                      </td>
+                      <td className="px-6 py-4 text-ink-soft font-medium text-xs">
+                        {new Date(user.createdAt).toLocaleDateString('es-AR', { year: 'numeric', month: 'short', day: 'numeric' })}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+
+            {/* Tarjetas: debajo de md, la tabla no entra sin scroll horizontal */}
+            <ul className="divide-y divide-line md:hidden">
+              {displayedUsers.map((user: any) => (
+                <li key={user.id} className="flex items-center gap-3 px-4 py-4">
+                  <div className="flex size-9 shrink-0 items-center justify-center rounded-full bg-indigo-100 text-[12px] font-extrabold text-indigo-700 border border-indigo-200">
+                    {user.name?.[0]?.toUpperCase()}
+                  </div>
+                  <div className="min-w-0 flex-1">
+                    <div className="font-bold text-ink truncate">{user.name}</div>
+                    <div className="text-ink-soft text-xs font-medium truncate">{user.email}</div>
+                    <div className="mt-1.5 flex items-center gap-2">
+                      <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[9.5px] font-bold uppercase tracking-wide
                         ${user.role === 'ADMIN' ? 'bg-indigo-50 text-indigo-700 border border-indigo-200/50' : 'bg-emerald-50 text-emerald-700 border border-emerald-200/50'}`}>
-                        {user.role === 'ADMIN' ? <ShieldCheck className="size-3.5" /> : <UsersIcon className="size-3.5" />}
+                        {user.role === 'ADMIN' ? <ShieldCheck className="size-3" /> : <UsersIcon className="size-3" />}
                         {user.role}
                       </span>
-                    </td>
-                    <td className="px-6 py-4 text-ink-soft font-medium text-xs">
-                      {new Date(user.createdAt).toLocaleDateString('es-AR', { year: 'numeric', month: 'short', day: 'numeric' })}
-                    </td>
-                  </tr>
-                ))}
-                {displayedUsers.length === 0 && (
-                  <tr>
-                    <td colSpan={3} className="px-6 py-12 text-center text-ink-soft font-medium">
-                      No hay usuarios en esta categoría.
-                    </td>
-                  </tr>
-                )}
-              </tbody>
-            </table>
-          </div>
+                      <span className="text-ink-soft text-[10.5px]">
+                        {new Date(user.createdAt).toLocaleDateString('es-AR', { year: 'numeric', month: 'short', day: 'numeric' })}
+                      </span>
+                    </div>
+                  </div>
+                </li>
+              ))}
+            </ul>
+          </>
         )}
       </Card>
 

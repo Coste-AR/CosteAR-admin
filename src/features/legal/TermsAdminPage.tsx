@@ -49,7 +49,7 @@ export function TermsAdminPage() {
 
   return (
     <AppShell wide>
-      <div className="mx-auto max-w-5xl p-8">
+      <div className="mx-auto max-w-5xl p-4 sm:p-8">
         <div className="mb-6 flex items-center gap-2.5">
           <ScrollText className="size-6 text-granate" />
           <div>
