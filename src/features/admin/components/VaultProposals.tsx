@@ -69,7 +69,7 @@ export function VaultProposals() {
   if (!proposals || proposals.length === 0) {
     return (
       <div className="space-y-6">
-        <div className="flex justify-between items-center bg-blue-50 text-blue-800 p-4 rounded-lg border border-blue-100 text-sm">
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between bg-blue-50 text-blue-800 p-4 rounded-lg border border-blue-100 text-sm">
           <div>
             <strong className="block mb-1">Nightly Learning Pipeline</strong>
             Estas propuestas se generan automáticamente en base a las consultas fallidas (RAG Misses) del día.
@@ -77,7 +77,7 @@ export function VaultProposals() {
           <Button
             variant="secondary"
             size="sm"
-            className="bg-white border-blue-200 text-blue-700 hover:bg-blue-100"
+            className="bg-white border-blue-200 text-blue-700 hover:bg-blue-100 shrink-0"
             disabled={runNightly.isPending}
             onClick={() => runNightly.mutate()}
           >
@@ -96,7 +96,7 @@ export function VaultProposals() {
 
   return (
     <div className="space-y-6">
-      <div className="flex justify-between items-center bg-blue-50 text-blue-800 p-4 rounded-lg border border-blue-100 text-sm">
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between bg-blue-50 text-blue-800 p-4 rounded-lg border border-blue-100 text-sm">
         <div>
           <strong className="block mb-1">Nightly Learning Pipeline</strong>
           Estas propuestas fueron generadas automáticamente por el LLM. Al aprobarlas, se commitean a la Bóveda.
@@ -104,7 +104,7 @@ export function VaultProposals() {
         <Button
           variant="secondary"
           size="sm"
-          className="bg-white border-blue-200 text-blue-700 hover:bg-blue-100"
+          className="bg-white border-blue-200 text-blue-700 hover:bg-blue-100 shrink-0"
           disabled={runNightly.isPending}
           onClick={() => runNightly.mutate()}
         >
@@ -189,7 +189,7 @@ export function VaultProposals() {
                   )}
                 </div>
               </div>
-              <div className="bg-slate-50 border-t border-slate-100 p-4 flex justify-end gap-3">
+              <div className="bg-slate-50 border-t border-slate-100 p-4 flex flex-wrap justify-end gap-3">
                 {isEditing ? (
                   <>
                     <Button

@@ -8,14 +8,18 @@ import {
 } from '../admin-hooks';
 import { Button } from '@/components/ui/Button';
 import toast from 'react-hot-toast';
-import { 
-  Loader2, Send, CheckCircle2, AlertCircle, HelpCircle, 
-  Mic, Square, Plus, MessageSquare, BookOpen
+import {
+  Loader2, Send, CheckCircle2, AlertCircle, HelpCircle,
+  Mic, Square, Plus, MessageSquare, BookOpen, Menu, X
 } from 'lucide-react';
 
 export function RagChat() {
   const [activeSessionId, setActiveSessionId] = useState<string | null>(null);
   const [question, setQuestion] = useState('');
+  // Solo importa debajo de lg: ahí el sidebar de sesiones (288px fijo) no
+  // convive con el chat en una pantalla de celular, así que se oculta por
+  // default y se abre como un panel superpuesto (patrón tipo WhatsApp Web).
+  const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
   
   // Audio recording state
   const [isRecording, setIsRecording] = useState(false);
@@ -39,6 +43,12 @@ export function RagChat() {
 
   const handleNewSessionClick = () => {
     setActiveSessionId(null);
+    setMobileSidebarOpen(false);
+  };
+
+  const handleSessionClick = (id: string) => {
+    setActiveSessionId(id);
+    setMobileSidebarOpen(false);
   };
 
   const handleAskClick = async () => {
@@ -117,53 +127,98 @@ export function RagChat() {
     }
   };
 
+  const sessionListBody = (
+    <>
+      <div className="flex-1 overflow-y-auto p-4 space-y-2">
+        {loadingSessions ? (
+          <div className="p-4 text-center text-sm font-medium text-ink-soft animate-pulse">Cargando chats...</div>
+        ) : sessions?.length === 0 ? (
+          <div className="p-4 text-center text-sm font-medium text-ink-soft">No hay chats recientes</div>
+        ) : (
+          sessions?.map((s: any) => (
+            <button
+              key={s.id}
+              onClick={() => handleSessionClick(s.id)}
+              className={`w-full text-left px-4 py-3 text-[13px] rounded-[14px] flex items-center gap-3 truncate transition-all duration-200 ${
+                activeSessionId === s.id
+                  ? 'bg-white shadow-sm text-indigo-700 font-bold border border-line scale-100'
+                  : 'text-ink-soft hover:bg-black/5 hover:text-ink scale-95'
+              }`}
+            >
+              <MessageSquare className={`w-4 h-4 shrink-0 ${activeSessionId === s.id ? 'text-indigo-500' : 'opacity-50'}`} />
+              <span className="truncate">{s.title || 'Nueva conversación'}</span>
+            </button>
+          ))
+        )}
+      </div>
+    </>
+  );
+
   return (
-    <div className="flex h-[calc(100vh-12rem)] max-w-6xl mx-auto bg-surface shadow-md border border-line rounded-[24px] overflow-hidden">
-      
-      {/* SIDEBAR: Sesiones */}
-      <div className="w-72 shrink-0 bg-surface-alt border-r border-line flex flex-col z-10 relative">
+    <div className="flex h-[calc(100vh-12rem)] max-w-6xl mx-auto bg-surface shadow-md border border-line rounded-[24px] overflow-hidden relative">
+
+      {/* SIDEBAR de escritorio: estático, siempre montado desde lg. No depende
+          de `mobileSidebarOpen` -- nunca se anima ni se oculta con CSS, así
+          que no hay riesgo de que quede invisible por un problema de cascada. */}
+      <div className="hidden lg:flex w-72 shrink-0 bg-surface-alt border-r border-line flex-col z-10 relative">
         <div className="p-5 border-b border-line bg-surface">
-          <Button 
-            onClick={handleNewSessionClick} 
+          <Button
+            onClick={handleNewSessionClick}
             className="w-full bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl h-11 shadow-sm shadow-indigo-200/50 flex items-center justify-center gap-2 font-bold transition-all hover:scale-[1.02]"
           >
             <Plus className="w-5 h-5" />
             Nuevo Chat
           </Button>
         </div>
-        <div className="flex-1 overflow-y-auto p-4 space-y-2">
-          {loadingSessions ? (
-            <div className="p-4 text-center text-sm font-medium text-ink-soft animate-pulse">Cargando chats...</div>
-          ) : sessions?.length === 0 ? (
-            <div className="p-4 text-center text-sm font-medium text-ink-soft">No hay chats recientes</div>
-          ) : (
-            sessions?.map((s: any) => (
-              <button
-                key={s.id}
-                onClick={() => setActiveSessionId(s.id)}
-                className={`w-full text-left px-4 py-3 text-[13px] rounded-[14px] flex items-center gap-3 truncate transition-all duration-200 ${
-                  activeSessionId === s.id 
-                    ? 'bg-white shadow-sm text-indigo-700 font-bold border border-line scale-100' 
-                    : 'text-ink-soft hover:bg-black/5 hover:text-ink scale-95'
-                }`}
-              >
-                <MessageSquare className={`w-4 h-4 shrink-0 ${activeSessionId === s.id ? 'text-indigo-500' : 'opacity-50'}`} />
-                <span className="truncate">{s.title || 'Nueva conversación'}</span>
-              </button>
-            ))
-          )}
-        </div>
+        {sessionListBody}
       </div>
+
+      {/* SIDEBAR de mobile: un panel superpuesto que solo existe en el DOM
+          mientras `mobileSidebarOpen` es true -- la visibilidad la controla
+          React montando/desmontando, no una clase CSS de transform. */}
+      {mobileSidebarOpen && (
+        <div className="fixed inset-0 z-30 lg:hidden">
+          <div className="absolute inset-0 bg-black/40" onClick={() => setMobileSidebarOpen(false)} />
+          <div className="absolute inset-y-0 left-0 w-72 max-w-[85vw] bg-surface-alt border-r border-line flex flex-col shadow-2xl">
+            <div className="p-5 border-b border-line bg-surface flex items-center gap-2">
+              <Button
+                onClick={handleNewSessionClick}
+                className="flex-1 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl h-11 shadow-sm shadow-indigo-200/50 flex items-center justify-center gap-2 font-bold transition-all hover:scale-[1.02]"
+              >
+                <Plus className="w-5 h-5" />
+                Nuevo Chat
+              </Button>
+              <button
+                type="button"
+                onClick={() => setMobileSidebarOpen(false)}
+                className="shrink-0 flex size-11 items-center justify-center rounded-xl text-ink-soft hover:bg-black/5"
+                aria-label="Cerrar lista de chats"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+            {sessionListBody}
+          </div>
+        </div>
+      )}
 
       {/* CHAT AREA */}
       <div className="flex-1 flex flex-col h-full bg-surface relative min-w-0">
         <div className="bg-surface border-b border-line p-5 shrink-0 z-10 flex items-center justify-between shadow-[0_2px_10px_rgba(0,0,0,0.02)]">
-          <div className="flex items-center gap-3">
-            <div className="p-2 rounded-xl bg-indigo-50 text-indigo-600 border border-indigo-100/50">
+          <div className="flex items-center gap-3 min-w-0">
+            <button
+              type="button"
+              onClick={() => setMobileSidebarOpen(true)}
+              className="lg:hidden shrink-0 flex size-9 items-center justify-center rounded-xl text-ink-soft hover:bg-black/5 border border-line"
+              aria-label="Ver lista de chats"
+            >
+              <Menu className="w-4.5 h-4.5" />
+            </button>
+            <div className="p-2 rounded-xl bg-indigo-50 text-indigo-600 border border-indigo-100/50 shrink-0">
               <BookOpen className="w-5 h-5" />
             </div>
-            <div>
-              <h3 className="text-lg font-black text-ink tracking-tight">
+            <div className="min-w-0">
+              <h3 className="text-base sm:text-lg font-black text-ink tracking-tight truncate">
                 Bóveda de Conocimiento (RAG)
               </h3>
             </div>
