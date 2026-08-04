@@ -149,7 +149,12 @@ export function AppShell({
         </div>
       </aside>
 
-      <main className="flex w-full flex-col min-w-0 lg:pl-4">
+      {/* mb-16: el nav inferior fijo (h-16, solo hasta lg) es un HERMANO de
+          <main>, no un hijo -- por más padding que tenga el contenido, el
+          contenedor de scroll siempre se extendía hasta el borde real de la
+          pantalla y quedaba una franja tapada detrás del nav. Achicar <main>
+          con un margen es lo que de verdad libera esa franja. */}
+      <main className="flex w-full flex-col min-w-0 mb-16 lg:mb-0 lg:pl-4">
         <div className="flex w-full flex-col h-full bg-surface-alt lg:bg-surface lg:rounded-[30px] lg:border border-line/40 overflow-hidden shadow-sm relative">
           <TopBar />
           <div className="flex-1 overflow-y-auto w-full relative">

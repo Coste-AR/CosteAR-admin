@@ -155,7 +155,7 @@ export function RagChat() {
   );
 
   return (
-    <div className="flex h-[calc(100vh-12rem)] max-w-6xl mx-auto bg-surface shadow-md border border-line rounded-[24px] overflow-hidden relative">
+    <div className="flex h-full max-w-6xl mx-auto bg-surface shadow-md border border-line rounded-[24px] overflow-hidden relative">
 
       {/* SIDEBAR de escritorio: estático, siempre montado desde lg. No depende
           de `mobileSidebarOpen` -- nunca se anima ni se oculta con CSS, así

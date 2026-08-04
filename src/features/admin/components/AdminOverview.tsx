@@ -81,7 +81,7 @@ export function AdminOverview() {
         </h2>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
           {/* Vault Health */}
-          <Card className="p-6 border-line bg-surface flex items-center gap-6">
+          <Card className="p-6 border-line bg-surface flex items-start gap-4 sm:items-center sm:gap-6">
             <div className="relative shrink-0 flex items-center justify-center size-16 rounded-full bg-blue-50 text-blue-600 border border-blue-100">
               <Database className="size-7" />
               <div className="absolute -bottom-1 -right-1 size-5 bg-white rounded-full flex items-center justify-center shadow-sm border border-line">
@@ -92,10 +92,10 @@ export function AdminOverview() {
                 )}
               </div>
             </div>
-            <div className="flex-1">
-              <div className="flex items-center justify-between">
+            <div className="flex-1 min-w-0">
+              <div className="flex flex-col items-start gap-2 sm:flex-row sm:items-center sm:justify-between">
                 <p className="text-sm font-semibold text-ink-soft">Volumen de la Bóveda</p>
-                <div className="flex items-center gap-2">
+                <div className="flex flex-wrap gap-2">
                   <Button
                     variant="ghost"
                     size="sm"
@@ -134,10 +134,10 @@ export function AdminOverview() {
           </Card>
 
           {/* AI Pipeline Health */}
-          <Card className="p-6 border-line bg-surface flex items-center gap-6">
+          <Card className="p-6 border-line bg-surface flex items-start gap-4 sm:items-center sm:gap-6">
             <div className="relative shrink-0 flex items-center justify-center size-16 rounded-full bg-violet-50 text-violet-600 border border-violet-100">
               <Server className="size-7" />
-              <div className={cn("absolute -bottom-1 -right-1 size-5 bg-white rounded-full flex items-center justify-center shadow-sm border border-line", 
+              <div className={cn("absolute -bottom-1 -right-1 size-5 bg-white rounded-full flex items-center justify-center shadow-sm border border-line",
                 (stats?.vault.pendingSignals || 0) > 0 ? "animate-bounce" : ""
               )}>
                 {(stats?.vault.pendingSignals || 0) > 0 ? (
@@ -147,7 +147,7 @@ export function AdminOverview() {
                 )}
               </div>
             </div>
-            <div>
+            <div className="min-w-0">
               <p className="text-sm font-semibold text-ink-soft">Pipeline de Autoaprendizaje</p>
               <div className="flex items-end gap-2 mt-1">
                 <span className="text-2xl font-black text-ink">{stats?.vault.pendingSignals ?? '-'}</span>
