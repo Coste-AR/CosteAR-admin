@@ -99,6 +99,19 @@ bitacora/
 
 ---
 
+## 4 bis. Issues — cómo entra el trabajo
+
+|ID|Regla|
+|---|---|
+|**ISS-01**|**Todo trabajo pendiente entra como issue de GitHub**, en el repo donde vive el código. Se crea con `/costear-issue`.|
+|**ISS-02**|**Los issues los cargan Alan y Lauti** (auditan el producto y detectan lo que falta). Los devs también pueden, pero la prioridad la pone quien reporta: es una decisión de negocio, no técnica.|
+|**ISS-03**|Toda issue lleva `type:`, `priority:` y `area:`. Las etiquetas existen en los 3 repos desde el 15-08-2026.|
+|**ISS-04**|**El issue nace sin asignar.** Los devs lo toman según su carga; quien reporta no reparte trabajo.|
+|**ISS-05**|Un issue = una cosa entregable. Una auditoría con 8 hallazgos son 8 issues, no uno con 8 bullets.|
+|**ISS-06**|Los issues se cierran desde el PR que los resuelve (`Closes #N`), nunca a mano.|
+
+---
+
 ## 5. Decisiones
 
 |ID|Regla|
