@@ -14,6 +14,10 @@ para: "Todo el equipo — Alan, Lauti, Santi, Giuli"
 
 Son **seis**. Cinco las usan los devs; **`/costear-issue` la usa todo el equipo.**
 
+> **Quién es quién en este manual.** **Santi** (Santiago) y **Giuli** (Giulianna) programan;
+> **Alan** y **Lauti** (Lautaro) auditan el producto y definen prioridades. Cuando el manual dice
+> "los devs", son Santi y Giuli.
+
 ---
 
 ## Antes de empezar (una sola vez por máquina)
