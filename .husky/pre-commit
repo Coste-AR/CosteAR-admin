@@ -1,1 +1,7 @@
-npx lint-staged
+# Typecheck del proyecto. Si no compila, el commit no entra.
+#
+# Este repo todavía no tiene ESLint instalado, así que no corre lint-staged
+# (el hook anterior invocaba `npx lint-staged` sin config ni dependencia).
+# Cuando se agregue ESLint, sumar acá el paso de lint-staged como en los otros repos.
+echo "→ typecheck"
+npm run typecheck
