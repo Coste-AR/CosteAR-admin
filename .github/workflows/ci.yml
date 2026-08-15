@@ -2,35 +2,40 @@ name: Admin CI
 
 on:
   push:
-    branches: [ "dev", "staging", "main" ]
+    branches: ["dev", "staging", "main"]
   pull_request:
-    branches: [ "dev", "staging", "main" ]
+    branches: ["dev", "staging", "main"]
+
+# Este repo todavía no tiene ESLint instalado ni archivos de test, así que el CI
+# corre typecheck + build y nada más. Poner acá `npm run lint` o `npm test` haría
+# fallar el pipeline por algo que no existe, y un CI que falla siempre es un CI
+# que el equipo aprende a ignorar.
+#
+# Cuando se agregue ESLint o el primer test, sumar los pasos correspondientes
+# y actualizar CLAUDE.md §2 (regla CMD-02).
 
 jobs:
   build-and-test:
     runs-on: ubuntu-latest
-    
+
     strategy:
       matrix:
         node-version: [22.x]
-        
+
     steps:
-    - uses: actions/checkout@v4
-    
-    - name: Use Node.js ${{ matrix.node-version }}
-      uses: actions/setup-node@v4
-      with:
-        node-version: ${{ matrix.node-version }}
-        cache: 'npm'
-        
-    - name: Install dependencies
-      run: npm ci
-      
-    - name: Run Linter
-      run: npm run lint
-      
-    - name: Build
-      run: npm run build
-      
-    - name: Run Tests
-      run: npm run test
+      - uses: actions/checkout@v4
+
+      - name: Use Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node-version }}
+          cache: "npm"
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Typecheck
+        run: npm run typecheck
+
+      - name: Build
+        run: npm run build
