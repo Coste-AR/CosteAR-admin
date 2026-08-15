@@ -4,7 +4,7 @@
 - **Rama:** `chore/convenciones-y-trazabilidad` (la misma en los tres)
 - **PRs:** [backend #55](https://github.com/Coste-AR/CosteAR-backend/pull/55) · [frontend #35](https://github.com/Coste-AR/CosteAR-frontend/pull/35) · [admin #9](https://github.com/Coste-AR/CosteAR-admin/pull/9)
 - **ADRs:** —
-- **Estado:** en review, esperando merge
+- **Estado:** ✅ mergeado a `dev` en los tres repos el 15-08-2026 (ver *Actualización* al pie)
 
 ## Qué se hizo
 
@@ -99,3 +99,25 @@ protege directamente al cliente o al código.
 - **Las skills están duplicadas en los tres repos** (es la única forma de que Claude Code las
   encuentre). La copia canónica es la del admin y se propagan con `npm run skills:sync`. Si
   alguien edita una copia a mano, el próximo sync se la pisa.
+
+---
+
+## Actualización — 15-08-2026
+
+Santiago mergeó los tres PRs a `dev`:
+
+| Repo | PR | Merge commit |
+| --- | --- | --- |
+| backend | [#55](https://github.com/Coste-AR/CosteAR-backend/pull/55) | `58ae04b1` |
+| frontend | [#35](https://github.com/Coste-AR/CosteAR-frontend/pull/35) | `2f16d8d5` |
+| admin | [#9](https://github.com/Coste-AR/CosteAR-admin/pull/9) | `880004ec` |
+
+Verificado en `dev` de los tres repos: están el `CLAUDE.md`, el `CONTRIBUTING.md`, el
+`commitlint.config.js`, el hook `commit-msg` y las 5 skills.
+
+**Lo que falta para que llegue a producción:** promover `dev → staging` y después
+`staging → main`. Esas dos promociones ahora necesitan la aprobación de otro socio, así que
+son la primera prueba real de la regla nueva.
+
+> Esta sección se agregó en vez de reescribir el texto de arriba, siguiendo la regla BIT-04:
+> una entrada no se edita para corregir la historia, se le agrega lo que pasó después.
