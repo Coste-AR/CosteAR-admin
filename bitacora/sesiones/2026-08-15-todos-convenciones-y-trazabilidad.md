@@ -121,3 +121,32 @@ son la primera prueba real de la regla nueva.
 
 > Esta sección se agregó en vez de reescribir el texto de arriba, siguiendo la regla BIT-04:
 > una entrada no se edita para corregir la historia, se le agrega lo que pasó después.
+
+## Actualización 2 — 15-08-2026 · el review deja de bloquear
+
+Al ir a promover a `staging`, Santiago se encontró bloqueado: GitHub no deja aprobar tu propio
+PR, ni siendo administrador. Con la regla original (1 aprobación obligatoria en `main` y
+`staging`) toda promoción dependía de que Alan, Lautaro o Giulianna estuvieran disponibles.
+
+**Decisión: el review deja de ser bloqueante.** `main` y `staging` pasan a
+`required_approving_review_count: 0`.
+
+**Qué se mantiene:**
+
+- PR obligatorio en `dev`, `staging` y `main` — no hay push directo a ninguna
+- **CI en verde obligatorio en las tres**, con `enforce_admins` activo en `staging` y `main`:
+  ni un administrador puede mergear con los tests o el typecheck en rojo
+- Sin force push ni borrado de esas ramas
+- En `main` y `staging`, los comentarios de review sin resolver siguen bloqueando
+
+**Qué se pierde:** un cambio puede llegar a producción sin que nadie más que el autor lo haya
+mirado. El CI cubre que compile y que los tests pasen; **no cubre un criterio equivocado.**
+
+**Cómo se compensa:** el review pasa a ser práctica del equipo en vez de traba. Quedó escrito
+en la Definition of Done, en la skill `/costear-pr` y en la plantilla de PR, con el criterio de
+cuándo pedirlo igual aunque nadie te obligue: **motor de cálculo, migraciones, cualquier cosa
+que toque plata del cliente, y todo lo que vaya a `main`.**
+
+> Motivo de fondo: somos cuatro, con ritmos distintos y sin todos dedicados full time al código.
+> Una regla que nadie puede cumplir no protege nada — se termina desactivando de apuro, y ahí sí
+> se pierde todo. Es preferible una regla más floja que se respete.
