@@ -7,6 +7,7 @@ Cómo funciona todo esto: [`README.md`](./README.md).
 
 | Fecha | Repo | Qué se hizo | PRs | ADRs |
 | --- | --- | --- | --- | --- |
+| 2026-08-15 | los 3 | [Alan y Lauti ya pueden cargar el trabajo pendiente como issues](./sesiones/2026-08-15-todos-skill-para-cargar-issues.md) — herramienta `/costear-issue` y las etiquetas de tipo, prioridad y área que las plantillas nombraban pero no existían | — | — |
 | 2026-08-15 | backend | [61 tests que no corrían en ningún lado](./sesiones/2026-08-15-backend-tests-que-no-corrian-en-ci.md) — entre ellos los 34 que verifican que una empresa no vea los datos de otra. El CI daba verde igual | [#58](https://github.com/Coste-AR/CosteAR-backend/pull/58) | backend#0001 |
 | 2026-08-15 | los 3 | [Convenciones de equipo y sistema de trazabilidad](./sesiones/2026-08-15-todos-convenciones-y-trazabilidad.md) — reglas escritas, hooks, plantillas, protección de ramas y esta bitácora | — | — |
 
