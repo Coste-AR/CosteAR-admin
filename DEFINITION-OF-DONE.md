@@ -25,7 +25,9 @@ son los criterios de aceptación del issue.
 ### Código
 
 - [ ] PR abierto contra `dev` con la plantilla completa: qué, por qué, cambios y cómo probarlo
-- [ ] **Al menos 1 review aprobado**, sin comentarios bloqueantes pendientes
+- [ ] **Review pedido a alguien del equipo** — o, si se mergeó sin review, que haya sido una
+      decisión consciente y no un olvido. *GitHub no lo bloquea (ver más abajo): depende de vos.*
+- [ ] Sin comentarios de review sin resolver
 - [ ] `npm run lint` sin errores *(no aplica en admin todavía)*
 - [ ] `npm run typecheck` sin errores
 - [ ] `npm test` en verde, incluidos los tests nuevos del PR
@@ -105,6 +107,17 @@ confirma por escrito dentro de las 24 h. *Lo que se acuerda por escrito, existe.
 
 **Review.** Los PRs asignados se revisan dentro de las 24 h hábiles. Los comentarios son sobre el
 trabajo, nunca sobre la persona, y se toman como información.
+
+> **El review no está forzado por GitHub** (decisión del 15-08-2026). Cada uno puede aprobar y
+> mergear su propio PR. La razón es práctica: somos cuatro y con distintos ritmos, y exigir la
+> aprobación de otro frenaba el trabajo más de lo que lo protegía.
+>
+> **Lo que sí está forzado es el CI**: nada entra a `dev`, `staging` ni `main` con los tests o el
+> typecheck en rojo, ni siquiera siendo administrador.
+>
+> **Dónde sí conviene pedir review igual, aunque nadie te obligue:** cambios en el motor de
+> cálculo, migraciones, cualquier cosa que toque plata del cliente, y todo lo que vaya a `main`.
+> Ahí el costo de equivocarse lo paga el cliente, no nosotros.
 
 ---
 
