@@ -69,11 +69,16 @@ sería señalar dónde mirar: `CosteAR-admin#18`.
 Decidido con Santiago la madrugada del 18-08-2026. Los dos primeros pasos quedan comprometidos
 para la próxima sesión; el tercero es una decisión que no toma el equipo técnico.
 
-| Paso | Qué | Cuándo |
+| Paso | Qué | Estado |
 |---|---|---|
-| 1 | **Anonimizar** archivos y cuerpos de PRs: nombres y cifras reales por datos ficticios. La matemática y los tests quedan intactos. Las cifras verdaderas se mueven al repo privado, no se borran | Próxima sesión |
-| 2 | **Escribir la regla** en el `CLAUDE.md` de los tres repos: los datos de un cliente no entran a un repositorio público — ni en tests, ni en seeds, ni en ejemplos | Próxima sesión |
-| 3 | Decidir sobre el **historial de git** y sobre **avisarle al cliente** | Sin fecha. Decisión de Santiago |
+| 1 | **Anonimizar** archivos, nombres de archivo, ramas y cuerpos de PR: nombres y cifras reales por datos ficticios. La matemática y los tests quedan intactos | ✅ Hecho la misma madrugada |
+| 2 | **Escribir la regla** en el `CLAUDE.md` de los tres repos: los datos de un cliente no entran a un repositorio público | ✅ Hecho |
+| 3 | Decidir sobre el **historial de git** y sobre **avisarle al cliente** | ⏳ Sin fecha. Decisión de Santiago |
+
+Los dos primeros se hicieron en el momento, sin esperar. Quedó verificado con `git grep` que el
+nombre del cliente no aparece en ningún archivo de la rama principal. **Los tests siguen probando
+exactamente lo mismo**: lo que se prueba es la matemática, y ésa no depende de que las aves sean
+6.300 o 5.000.
 
 **Lo que la anonimización no resuelve, dicho claro:** el historial de git es permanente. Baja lo que
 se ve al entrar al repositorio y lo que aparece en una búsqueda, pero no borra lo ya publicado. El
@@ -82,6 +87,16 @@ obliga a forzar el repositorio y les rompe la copia a todos, así que se evalúa
 
 Queda anotado además como comentario en los PRs #67, #69, #70 y #71, para que nadie los dé por
 cerrados sin ver esto.
+
+## Un problema que apareció al final
+
+**S-03, S-04 y el seed del tenant nunca habían llegado a la rama principal.** Los pedidos de
+integración estaban encadenados uno sobre otro y se integraron contra su rama de origen en vez de
+contra la principal, así que el trabajo quedó en ramas que ya nadie mira. Se detectó al anonimizar,
+por casualidad. Quedó todo junto en un pedido nuevo.
+
+Es una lección sobre encadenar trabajo: si se integra fuera de orden, **el trabajo se pierde de
+vista sin que nada falle**.
 
 ## Qué quedó pendiente
 
