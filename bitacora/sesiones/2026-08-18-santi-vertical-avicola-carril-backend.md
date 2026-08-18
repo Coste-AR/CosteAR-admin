@@ -62,7 +62,26 @@ del equipo ya lo nombraban), pero esta sesión **aumentó mucho** lo expuesto: p
 suelto a la estructura económica completa.
 
 Está cargado como issue en el repositorio privado, no en el público — escribirlo en el público
-sería señalar dónde mirar.
+sería señalar dónde mirar: `CosteAR-admin#18`.
+
+### Qué se acordó hacer, y cuándo
+
+Decidido con Santiago la madrugada del 18-08-2026. Los dos primeros pasos quedan comprometidos
+para la próxima sesión; el tercero es una decisión que no toma el equipo técnico.
+
+| Paso | Qué | Cuándo |
+|---|---|---|
+| 1 | **Anonimizar** archivos y cuerpos de PRs: nombres y cifras reales por datos ficticios. La matemática y los tests quedan intactos. Las cifras verdaderas se mueven al repo privado, no se borran | Próxima sesión |
+| 2 | **Escribir la regla** en el `CLAUDE.md` de los tres repos: los datos de un cliente no entran a un repositorio público — ni en tests, ni en seeds, ni en ejemplos | Próxima sesión |
+| 3 | Decidir sobre el **historial de git** y sobre **avisarle al cliente** | Sin fecha. Decisión de Santiago |
+
+**Lo que la anonimización no resuelve, dicho claro:** el historial de git es permanente. Baja lo que
+se ve al entrar al repositorio y lo que aparece en una búsqueda, pero no borra lo ya publicado. El
+repositorio es público desde hace tiempo y puede estar clonado o indexado. Reescribir el historial
+obliga a forzar el repositorio y les rompe la copia a todos, así que se evalúa aparte.
+
+Queda anotado además como comentario en los PRs #67, #69, #70 y #71, para que nadie los dé por
+cerrados sin ver esto.
 
 ## Qué quedó pendiente
 
