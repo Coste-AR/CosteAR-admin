@@ -89,7 +89,7 @@ Atajos: `/costear-commit` · `/costear-pr` · `/costear-review` · `/costear-adr
 Las reglas completas están en [`bitacora/README.md`](./bitacora/README.md). Las tres que más
 importan:
 
-1. **Se escribe para quien no programa.** Alan y Juli tienen que poder leerla.
+1. **Se escribe para quien no programa.** Alan y Lauti tienen que poder leerla.
 2. **Toda entrada linkea a PRs y ADRs reales.** Sin links no sirve como trazabilidad.
 3. **Nunca se edita una entrada vieja para corregir la historia.** Si algo cambió, es una
    entrada nueva que referencia a la anterior.
@@ -109,7 +109,7 @@ npm run skills:sync
 ```
 
 Eso las copia a `CosteAR-backend` y `CosteAR-frontend`. Después hay que **commitear en cada
-repo**: las skills se distribuyen por git, así a Alan y a Juli les aparecen con un `git pull`
+repo**: las skills se distribuyen por git, así le aparecen a todo el equipo con un `git pull`
 sin instalar nada.
 
 > **Nunca edites las copias de backend o frontend a mano** — el próximo sync las pisa.

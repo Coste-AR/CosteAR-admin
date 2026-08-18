@@ -71,7 +71,7 @@ Para una decisión técnica puntual, desde el repo donde vive el código:
 ## Las reglas de la bitácora
 
 1. **Una entrada por sesión de trabajo**, no por commit.
-2. **Se escribe para quien no programa.** Alan y Juli tienen que poder leerla. Término técnico
+2. **Se escribe para quien no programa.** Alan y Lauti tienen que poder leerla. Término técnico
    que no se pueda evitar, se aclara entre paréntesis.
 3. **Toda entrada linkea a PRs y ADRs reales.** Una entrada sin links no sirve como trazabilidad.
 4. **Nunca se edita una entrada vieja para corregir la historia.** Si algo cambió, es una entrada

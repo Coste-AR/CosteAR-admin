@@ -91,11 +91,24 @@ bitacora/
 |ID|Regla|
 |---|---|
 |**BIT-01**|**Una entrada por sesión de trabajo.** La escribe `/costear-bitacora`, no se hace a mano.|
-|**BIT-02**|**Se escribe para Alan y Juli, que no son devs.** Nada de jerga sin explicar. Si hace falta un término técnico, se aclara entre paréntesis.|
+|**BIT-02**|**Se escribe para Alan y Lauti, que no son devs.** Nada de jerga sin explicar. Si hace falta un término técnico, se aclara entre paréntesis.|
 |**BIT-03**|**Toda entrada linkea a los PRs y ADRs reales.** Una entrada sin links no sirve como trazabilidad.|
 |**BIT-04**|**Nunca se edita una entrada vieja para "corregir la historia".** Si algo cambió, es una entrada nueva que referencia a la anterior.|
 |**BIT-05**|El `INDICE.md` se actualiza en el mismo commit que la entrada.|
 |**BIT-06**|**Nada de credenciales, tokens ni datos del cliente en la bitácora.** Aunque el repo sea privado.|
+
+---
+
+## 4 bis. Issues — cómo entra el trabajo
+
+|ID|Regla|
+|---|---|
+|**ISS-01**|**Todo trabajo pendiente entra como issue de GitHub**, en el repo donde vive el código. Se crea con `/costear-issue`.|
+|**ISS-02**|**Los issues los cargan Alan y Lauti** (auditan el producto y detectan lo que falta). Los devs también pueden, pero la prioridad la pone quien reporta: es una decisión de negocio, no técnica.|
+|**ISS-03**|Toda issue lleva `type:`, `priority:` y `area:`. Las etiquetas existen en los 3 repos desde el 15-08-2026.|
+|**ISS-04**|**El issue nace sin asignar.** Los devs lo toman según su carga; quien reporta no reparte trabajo.|
+|**ISS-05**|Un issue = una cosa entregable. Una auditoría con 8 hallazgos son 8 issues, no uno con 8 bullets.|
+|**ISS-06**|Los issues se cierran desde el PR que los resuelve (`Closes #N`), nunca a mano.|
 
 ---
 

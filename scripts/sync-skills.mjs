@@ -6,7 +6,7 @@
  *
  * Por qué existe: Claude Code solo descubre las skills que están en el `.claude/skills/` del
  * repo donde estás trabajando. Como tenemos tres repos separados, las skills tienen que estar
- * commiteadas en los tres — así a Alan y a Juli les aparecen solas con un `git pull`, sin
+ * commiteadas en los tres — así le aparecen solas a todo el equipo con un `git pull`, sin
  * instalar nada. Este script evita que las tres copias se desincronicen.
  *
  * La copia canónica es la de ESTE repo. Nunca editar las copias de backend o frontend a mano:

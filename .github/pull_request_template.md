@@ -38,6 +38,8 @@ Closes #
 
 - [ ] Issue vinculado
 - [ ] Commits convencionales y atómicos
+- [ ] **Review**: se lo pedí a alguien, o decidí conscientemente mergear sin review.
+      *GitHub no lo bloquea. Pedilo igual si toca lógica de negocio, plata del cliente o va a `main`.*
 - [ ] **Lo abrí en el navegador y lo probé** (si toca UI o flujo)
 - [ ] Si toqué `bitacora/`: el `INDICE.md` quedó actualizado en el mismo commit
 - [ ] Sin credenciales, tokens ni datos de cliente en lo que agrego
