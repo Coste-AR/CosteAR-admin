@@ -15,6 +15,7 @@ import { AdminOverviewPage } from '@/features/admin/AdminOverviewPage';
 import { AdminUsersPage } from '@/features/admin/AdminUsersPage';
 import { AdminVaultPage } from '@/features/admin/AdminVaultPage';
 import { AdminRagPage } from '@/features/admin/AdminRagPage';
+import { AdminSectoresPage } from '@/features/admin/AdminSectoresPage';
 import { SystemAlertsPage } from '@/features/system/pages/SystemAlertsPage';
 import { TermsAdminPage } from '@/features/legal/TermsAdminPage';
 
@@ -61,6 +62,7 @@ const adminVaultRoute = createRoute({ getParentRoute: () => rootRoute, path: '/a
 const adminRagRoute = createRoute({ getParentRoute: () => rootRoute, path: '/admin/chat', beforeLoad: requireAdmin, component: AdminRagPage });
 const adminSystemAlertsRoute = createRoute({ getParentRoute: () => rootRoute, path: '/admin/system-alerts', beforeLoad: requireAdmin, component: SystemAlertsPage });
 const adminTermsRoute = createRoute({ getParentRoute: () => rootRoute, path: '/admin/terms', beforeLoad: requireAdmin, component: TermsAdminPage });
+const adminSectoresRoute = createRoute({ getParentRoute: () => rootRoute, path: '/admin/sectores', beforeLoad: requireAdmin, component: AdminSectoresPage });
 
 const routeTree = rootRoute.addChildren([
   indexRoute,
@@ -75,6 +77,7 @@ const routeTree = rootRoute.addChildren([
   adminRagRoute,
   adminSystemAlertsRoute,
   adminTermsRoute,
+  adminSectoresRoute,
 ]);
 
 export const router = createRouter({ routeTree });

@@ -8,6 +8,7 @@ import {
   MessageSquareText,
   AlertTriangle,
   ScrollText,
+  Building2,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useLogout } from "@/features/auth/auth-hooks";
@@ -19,6 +20,7 @@ const NAV = [
   { to: "/admin/users", label: "Gestión de Staff", icon: UsersIcon },
   { to: "/admin/vault", label: "Entrenamiento Bóveda", icon: FileCheck2 },
   { to: "/admin/chat", label: "Consola IA", icon: MessageSquareText },
+  { to: "/admin/sectores", label: "Sectores", icon: Building2 },
   { to: "/admin/system-alerts", label: "Alertas", icon: AlertTriangle },
   { to: "/admin/terms", label: "Términos y Condiciones", icon: ScrollText },
 ] as const;

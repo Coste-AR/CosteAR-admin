@@ -170,6 +170,56 @@ export function useCreateAdminUserMutation() {
   });
 }
 
+// ---- Industry Profiles Hooks ----
+export interface IndustryProfile {
+  id: string;
+  category: string;
+  label: string;
+  mpKeywords: string[];
+  cipKeywords: string[];
+  modKeywords: string[];
+  eventKeywords: string[];
+  lossKeywords: string[];
+  energyIsMP: boolean;
+  fuelIsMP: boolean;
+  detectPatterns: string[];
+  measurementUnit: string | null;
+  isActive: boolean;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export type IndustryProfileUpdate = Partial<
+  Pick<IndustryProfile, 'label' | 'mpKeywords' | 'cipKeywords' | 'modKeywords' | 'eventKeywords' | 'lossKeywords' | 'energyIsMP' | 'fuelIsMP' | 'detectPatterns' | 'measurementUnit' | 'isActive'>
+>;
+
+export function useIndustryProfiles() {
+  return useQuery({
+    queryKey: ['industry-profiles'],
+    queryFn: async () => {
+      const res = await api.get<{ data: IndustryProfile[] }>('/admin/industry-profiles');
+      return res.data.data;
+    },
+  });
+}
+
+export function useUpdateIndustryProfileMutation() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async ({ category, data }: { category: string; data: IndustryProfileUpdate }) => {
+      const res = await api.put<{ data: IndustryProfile }>(`/admin/industry-profiles/${category}`, data);
+      return res.data.data;
+    },
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['industry-profiles'] });
+      toast.success('Perfil actualizado');
+    },
+    onError: (err) => {
+      toast.error(`No se pudo actualizar: ${apiErrorMessage(err)}`);
+    },
+  });
+}
+
 // ---- Nightly Pipeline Hook ----
 export function useRunNightlyPipelineMutation() {
   const queryClient = useQueryClient();
