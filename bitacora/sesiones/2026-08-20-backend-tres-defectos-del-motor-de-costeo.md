@@ -1,15 +1,15 @@
-# 2026-08-20 — Tres defectos que hacían que el costo de un producto saliera mal
+# 2026-08-20 — Cuatro defectos que hacían que el costo de un producto saliera mal
 
 - **Repo(s):** backend
-- **Ramas:** `fix/prorrateo-secundario-sin-reparto` · `fix/costo-unitario-produccion-en-proceso` · `fix/cpv-unitario-por-unidades-vendidas`
-- **PRs:** [#103](https://github.com/Coste-AR/CosteAR-backend/pull/103) · [#104](https://github.com/Coste-AR/CosteAR-backend/pull/104) · [#105](https://github.com/Coste-AR/CosteAR-backend/pull/105)
-- **ADRs:** [backend#0005](https://github.com/Coste-AR/CosteAR-backend/blob/fix/prorrateo-secundario-sin-reparto/docs/adr/0005-cortar-el-calculo-si-el-prorrateo-secundario-no-cierra.md) · [backend#0006](https://github.com/Coste-AR/CosteAR-backend/blob/fix/costo-unitario-produccion-en-proceso/docs/adr/0006-el-costo-unitario-de-terminados-va-al-lado-del-de-produccion.md)
-- **Estado:** en review — los tres PRs abiertos, ninguno mergeado
-- **Issues:** cierra [#91](https://github.com/Coste-AR/CosteAR-backend/issues/91), [#89](https://github.com/Coste-AR/CosteAR-backend/issues/89) y [#88](https://github.com/Coste-AR/CosteAR-backend/issues/88) — los tres primeros del **Bloque C** del reparto del 20-08
+- **Ramas:** `fix/prorrateo-secundario-sin-reparto` · `fix/costo-unitario-produccion-en-proceso` · `fix/cpv-unitario-por-unidades-vendidas` · `fix/estado-de-costos-variacion-presupuesto`
+- **PRs:** [#103](https://github.com/Coste-AR/CosteAR-backend/pull/103) · [#104](https://github.com/Coste-AR/CosteAR-backend/pull/104) · [#105](https://github.com/Coste-AR/CosteAR-backend/pull/105) · [#106](https://github.com/Coste-AR/CosteAR-backend/pull/106)
+- **ADRs:** backend#0007 · [backend#0005](https://github.com/Coste-AR/CosteAR-backend/blob/fix/prorrateo-secundario-sin-reparto/docs/adr/0005-cortar-el-calculo-si-el-prorrateo-secundario-no-cierra.md) · [backend#0006](https://github.com/Coste-AR/CosteAR-backend/blob/fix/costo-unitario-produccion-en-proceso/docs/adr/0006-el-costo-unitario-de-terminados-va-al-lado-del-de-produccion.md)
+- **Estado:** en review — los cuatro PRs abiertos, ninguno mergeado
+- **Issues:** cierra [#91](https://github.com/Coste-AR/CosteAR-backend/issues/91), [#89](https://github.com/Coste-AR/CosteAR-backend/issues/89) y [#88](https://github.com/Coste-AR/CosteAR-backend/issues/88); avanza [#90](https://github.com/Coste-AR/CosteAR-backend/issues/90) sin cerrarlo — los cuatro primeros del **Bloque C** del reparto del 20-08
 
 ## Qué se hizo
 
-Tres arreglos en el motor de cálculo. Los tres tenían la misma característica y por eso eran
+Cuatro arreglos en el motor de cálculo. Los cuatro tenían la misma característica y por eso eran
 peligrosos: **el sistema no daba ningún error, simplemente devolvía un número equivocado.**
 
 - **Un centro de servicio podía desaparecer del cálculo.** Si un centro de servicio
@@ -29,15 +29,20 @@ peligrosos: **el sistema no daba ningún error, simplemente devolvía un número
   daba un costo por unidad vendida un 40 % más bajo que el real. Ahora cada número se divide por
   las unidades que le corresponden: lo producido por las producidas, lo vendido por las vendidas.
 
+- **El estado de costos se quedaba en el costo "normal" y lo trataba como si fuera el real.**
+  Cuando la carga fabril real de un mes no coincide con la presupuestada, esa diferencia —la
+  *variación presupuesto*— es parte de lo que costó producir, y no estaba entrando al costo del
+  producto. Ahora el estado muestra las dos líneas: el costo normal y el costo real.
+
 ## Por qué
 
-Los tres salieron de la auditoría del 20-08: el primero es el hallazgo **L1** de Lautaro sobre el
-motor de costos por órdenes, y los otros dos son hallazgos propios de esa misma revisión. Los tres
-estaban en el Bloque C del reparto, que es el que mueve números de plata y por eso quedó del lado
-de Santiago.
+Los cuatro salieron de la auditoría del 20-08: el primero es el hallazgo **L1** de Lautaro sobre
+el motor de costos por órdenes, y los otros tres son hallazgos propios de esa misma revisión. Los
+cuatro estaban en el Bloque C del reparto, que es el que mueve números de plata y por eso quedó
+del lado de Santiago.
 
 Con un cliente real usando el sistema desde agosto, **un costo mal calculado no es un error de
-software: es una lista de precios mal armada.** Ninguno de los tres avisaba de ninguna manera.
+software: es una lista de precios mal armada.** Ninguno de los cuatro avisaba de ninguna manera.
 
 ## Decisiones que se tomaron sobre la marcha
 
@@ -59,8 +64,19 @@ software: es una lista de precios mal armada.** Ninguno de los tres avisaba de n
   mostrar una advertencia al lado del número: se descartó porque una advertencia al lado de un
   número mal calculado se ignora.
 
+- **Hay dos variaciones y van a lugares distintos.** La *variación presupuesto* (lo que costó de
+  más o de menos hacer lo que se hizo) es costo del producto y ahora entra al estado de costos. La
+  *variación volumen* (la capacidad que se pagó y no se usó) es una pérdida de la empresa y va al
+  estado de resultados: **se dejó afuera a propósito.** La cátedra marca esa confusión como el
+  punto que más se olvida.
+
+- **Los trabajos de terceros quedaron afuera.** Es otro renglón que falta en el estado de costos,
+  pero no existe en el sistema: no hay campo, ni pantalla, ni dato. Es una funcionalidad nueva, no
+  una cuenta mal hecha, y agrandar el trabajo sin avisar no corresponde. **Por eso el issue #90
+  queda abierto.**
+
 - **El PR #105 se apiló sobre el #104** en vez de salir de `dev`, porque tocan las mismas líneas
-  del mismo archivo. **Se mergean de abajo hacia arriba: primero el #104, después el #105.**
+  del mismo archivo. **La cadena se mergea de abajo hacia arriba: #104, después #105, después #106.**
 
 ## Lo que apareció sin estar en ningún issue
 
@@ -84,11 +100,11 @@ software: es una lista de precios mal armada.** Ninguno de los tres avisaba de n
   la pantalla de resultado sigue mostrando solo el número viejo. Es un cambio del repo de
   frontend y no se metió acá sin avisar. Mientras tanto es exactamente el patrón que persigue el
   issue [#98](https://github.com/Coste-AR/CosteAR-backend/issues/98): algo calculado que nadie usa.
-- **Del Bloque C faltan dos:** el issue [#90](https://github.com/Coste-AR/CosteAR-backend/issues/90)
-  (trabajos de terceros y variación presupuesto en el estado de costos) y el
-  [#92](https://github.com/Coste-AR/CosteAR-backend/issues/92) (conectar el módulo de desperdicio,
-  que existe y nadie llama).
-- **Los tres PRs esperan review y merge.** Ninguno se mergea el mismo día que se abre (REV-07).
+- **El issue [#90](https://github.com/Coste-AR/CosteAR-backend/issues/90) queda abierto** por los
+  trabajos de terceros, que son una entrada nueva de punta a punta.
+- **Del Bloque C falta el [#92](https://github.com/Coste-AR/CosteAR-backend/issues/92)**: conectar
+  el módulo de desperdicio, que existe y nadie llama.
+- **Los cuatro PRs esperan review y merge.** Ninguno se mergea el mismo día que se abre (REV-07).
 
 ## Cómo verificarlo
 
@@ -98,9 +114,10 @@ Desde `CosteAR-backend`, parado en cada rama:
 npx vitest run tests/application/hl1-secundario-no-pierde-costo.test.ts
 npx vitest run tests/application/costo-unitario-produccion-en-proceso.test.ts
 npx vitest run tests/application/cpv-unitario-por-vendidas.test.ts
+npx vitest run tests/application/estado-de-costos-variacion-presupuesto.test.ts
 ```
 
-La suite completa quedó en **1331 tests, 0 fallidos**, con `npm run typecheck` y `npm run lint`
+La suite completa quedó en **1342 tests, 0 fallidos**, con `npm run typecheck` y `npm run lint`
 limpios (los 20 warnings que salen ya estaban antes de esta sesión).
 
 En pantalla: guardar Costos Indirectos con un centro de servicio sin reparto cargado. Tiene que
@@ -118,5 +135,9 @@ aparecer un error que nombre a ese centro, y no un cálculo que termina bien.
 - **Ahora hay dos costos unitarios parecidos en el resultado**, y dos números parecidos se
   confunden. Que no pase es trabajo de la pantalla: hay que etiquetarlos con las palabras del
   estado de costos, no con jerga.
+- ⚠️ **Los períodos ya calculados que tengan variación presupuesto van a dar distinto si se
+  recalculan**, y el margen bruto con ellos. En el caso de prueba de la cátedra son $21.500 más de
+  costo. Es el arreglo funcionando —antes esa plata no llegaba al costo del producto—, pero
+  conviene saberlo antes de mergear y no descubrirlo comparando dos números que "no coinciden".
 - **No se sabe todavía qué SHA corre en producción**, así que no se puede afirmar si estos tres
   defectos están afectando al cliente hoy. Depende del Bloque E (desatascar el pipeline).
