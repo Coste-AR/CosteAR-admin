@@ -19,6 +19,7 @@
 7. [Reparto de trabajo](#7-reparto-de-trabajo)
 8. [Qué hay que cerrar antes de repartir](#8-qué-hay-que-cerrar-antes-de-repartir)
 9. [Bitácora de ejecución](#9-bitácora-de-ejecución)
+10. [Diagnóstico: por qué aparecieron tantos problemas](#10-diagnóstico-por-qué-aparecieron-tantos-problemas)
 
 ---
 
@@ -641,6 +642,133 @@ mergea el mismo día que se abre (REV-07).
 | `/health` ahora dice qué versión corre | La pregunta *"¿esto afecta al cliente?"* quedó sin respuesta **tres veces** en la auditoría, siempre por no saber qué SHA corría dónde. El runbook pedía anotarlo a mano: **anotar a mano algo que la plataforma ya sabe es una promesa que se incumple sola**. Ahora sale de `RAILWAY_GIT_COMMIT_SHA`, y si no está dice `desconocido` en vez de inventar. **Esto cierra el pedido de "registrar el SHA de cada ambiente" del Bloque E sin depender de que alguien se acuerde.** |
 | Error propio: un test que no protegía | La primera versión del test del healthcheck usaba `buildApp()`, que exige `DATABASE_URL`; **el CI unitario no levanta Postgres a propósito**, así que el archivo ni cargaba (`0 test`). Pasaba en local por el `.env`. Se reescribió sobre una función pura. **Un test que solo corre donde hay base no protege el lugar por donde pasan todos los cambios.** |
 | Lo que NO se tocó | La guardia de cobertura RLS (`tests/config/rls-coverage.test.ts`) ya existía y está bien hecha: compara `schema.prisma` contra `rls.sql` sin necesitar Postgres. **El problema nunca fue la cobertura del archivo, sino que el archivo no se ejecutaba.** |
+
+---
+
+## 10. Diagnóstico: por qué aparecieron tantos problemas
+
+> Pedido de Santiago el 22-08: *«hay muchos errores, muchos problemas; necesito diagnosticar qué
+> está pasando para poder recién solucionarlo»*. Esto es el diagnóstico, con los números medidos.
+> Las soluciones son el paso siguiente y no están acá a propósito.
+
+### 10.1 El número que ordena todo
+
+**En tres días se abrieron 24 PRs en el backend. Cuatro de ellos —el 17 %— no agregaron nada:
+existieron solo para recuperar trabajo que ya estaba hecho y no había llegado a `dev`.**
+
+| PR | Qué recuperaba |
+|---|---|
+| #110 | Los arreglos de #88, #90 y #92 |
+| #121 | La columna y la migración de trabajos de terceros |
+| #123 | El paso a paso del runbook |
+| #125 | El conflicto que bloqueaba la promoción |
+
+Ese 17 % es **re-trabajo puro**: horas gastadas en mover cosas que ya funcionaban.
+
+### 10.2 Lo que NO es el problema
+
+Conviene descartarlo primero, para no arreglar lo que ya funciona:
+
+| Sospechoso | Medición | Veredicto |
+|---|---|---|
+| El código | 1.420 tests, suite en verde | No es |
+| El CI | **42 corridas exitosas contra 2 fallidas** (95 %) | No es |
+| La cobertura de reglas RLS | La guardia estática existe y funciona | No es |
+| La doctrina | Cinco ADR, todos verificados contra la cátedra | No es |
+
+**El problema no está en el software. Está en el flujo entre personas y en el estado del
+entorno.**
+
+### 10.3 Las cinco causas, por orden de costo
+
+#### 🔴 A. No existe la señal de «terminé» — 4 incidentes, el 100 % del re-trabajo
+
+Es la causa más cara y la más simple.
+
+**Evidencia dura:**
+
+| PR | Se mergeó | El commit que faltaba es de | Diferencia |
+|---|---|---|---|
+| #119 | 15:09:49 | 15:21:32 | **12 minutos después** |
+| #122 | 16:12:25 | 18:04:01 | ~2 horas después |
+
+El trabajo se pushea de a poco: se abre el PR y se le siguen agregando commits (correcciones,
+tests, el ADR). Quien mergea ve un PR abierto y en verde, y lo mergea. **Nada distingue “esto está
+listo” de “esto todavía está creciendo”.**
+
+Los tres primeros casos se atribuyeron a los PRs apilados. El cuarto fue un PR simple contra `dev`
+y pasó igual: **el apilamiento agravaba el síntoma, pero la causa era otra.**
+
+Agrava el problema que **GitHub muestra `MERGED` en verde aunque el trabajo no haya llegado a
+`dev`** — es lo que pasa cuando un PR apilado se mergea contra su rama de abajo. El tablero dice
+que está hecho y no está.
+
+#### 🟠 B. El entorno arrastra un estado roto que nadie cerró — 2 incidentes
+
+- Una migración figuraba **iniciada y nunca terminada** desde el 19-08, y eso **bloquea cualquier
+  deploy** (P3009). Estuvo tres días así, sin que nadie lo supiera.
+- El schema y el historial de migraciones **divergieron**: `prisma migrate diff` arrastra hoy
+  **9 sentencias destructivas** que no corresponden a ningún cambio real (los índices de
+  `vault_chunks` del issue #72, una FK y varios `DROP DEFAULT`).
+
+Consecuencia: **cada migración nueva hay que escribirla a mano** y filtrar el ruido. Eso ya se
+normalizó —hay dos migraciones con ese comentario— y una anomalía normalizada deja de verse.
+
+#### 🟠 C. Lo que dependía de que alguien se acordara, no se hizo — 3 huecos
+
+- Las **políticas de aislamiento entre empresas** no se aplicaban en el deploy: `apply-rls.mjs` se
+  corría a mano. Una tabla nueva podía quedar en producción sin protección, sin fallar ni avisar.
+- **Nadie sabía qué SHA corría en cada ambiente.** El runbook pedía anotarlo a mano después de cada
+  deploy. No se anotó nunca.
+- **No existía chequeo previo de migraciones**, y la herramienta que había resolvía el caso
+  contrario al que teníamos.
+
+Los tres estaban **declarados como “hueco de infra” en el runbook**, sin dueño ni fecha. Un hueco
+declarado y sin dueño es un hueco que sigue abierto.
+
+#### 🟡 D. Verificación en el entorno equivocado — 4 incidentes, todos míos
+
+| Error | Dónde falló |
+|---|---|
+| Test del healthcheck que usaba `buildApp()` | Pasaba en local por el `.env`; **el CI no levanta Postgres** y el archivo ni cargaba (`0 test`) |
+| Instructivo del diagnóstico | Sintaxis de **bash** entregada a una terminal **PowerShell**, sin decir en qué máquina corría |
+| Primer enfoque de trabajos de terceros | Guardado en el JSON de CIP: funcionaba, pero invitaba al error que el propio ADR previene |
+| Falso positivo en `check-migrations` | Miraba fila por fila; Prisma escribe una fila nueva al resolver |
+
+**Patrón común: verifiqué donde yo estaba parado, no donde el trabajo iba a vivir** — el CI, la
+terminal de otro, el criterio de un tercero.
+
+#### 🟡 E. Señales que enseñan a desconfiar del semáforo — 2 focos
+
+- Un test **falla por timeout de 5 s cuando la máquina está cargada** y pasa en 956 ms aislado.
+- **20 warnings de lint preexistentes** en cada corrida.
+- **86 ramas remotas**, de las cuales **69 ya están mergeadas** y siguen ahí.
+
+Ninguno rompe nada hoy. El daño es acumulativo: cuando el ruido es normal, **la señal verdadera se
+pierde adentro**.
+
+### 10.4 La tesis
+
+> **Todo lo que dependía de la memoria de una persona falló. Todo lo que estaba automatizado
+> funcionó.**
+
+- Acordarse de mergear en orden → falló 3 veces.
+- Acordarse de verificar que el trabajo llegó → falló 4 veces.
+- Acordarse de correr `apply-rls` → no se corrió nunca.
+- Acordarse de anotar el SHA → no se anotó nunca.
+- El CI → 95 % verde, y **encontró** el test que no cargaba.
+- El test que fija una decisión de diseño → **cazó** un auto-merge que la revertía en silencio.
+
+Y hay un agravante de método: **REV-08 ya estaba escrita**, por este mismo accidente del 18-08. La
+regla existía, estaba redactada, y volvió a pasar tres veces. **Una regla que hay que recordar en
+el momento exacto no es un control: es una intención.**
+
+### 10.5 Lo que este diagnóstico NO dice
+
+- No dice que se trabajó mal. En tres días se cerraron cinco defectos que movían plata del cliente,
+  con doctrina verificada y cinco ADR escritos.
+- No dice que haya que frenar. Dice **dónde** se está perdiendo el tiempo: no en programar, sino en
+  mover trabajo ya hecho y en pelear con un entorno que arrastra estado roto.
 
 ---
 
