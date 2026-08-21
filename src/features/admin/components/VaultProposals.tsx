@@ -10,6 +10,7 @@ import {
 } from '../admin-hooks';
 import { Card } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
+import { ConfirmDialog } from '@/components/ui/ConfirmDialog';
 import { Loader2, CheckCircle2, XCircle, FileText, AlertTriangle, Zap, Pencil, Save, X } from 'lucide-react';
 import toast from 'react-hot-toast';
 
@@ -22,6 +23,10 @@ export function VaultProposals() {
 
   const [editingId, setEditingId] = useState<string | null>(null);
   const [draft, setDraft] = useState<UpdateProposalInput>({});
+  const [confirm, setConfirm] = useState<{
+    type: 'approve' | 'reject' | 'save';
+    proposalId: string;
+  } | null>(null);
 
   const startEdit = (proposal: VaultProposal) => {
     setEditingId(proposal.id);
@@ -38,14 +43,23 @@ export function VaultProposals() {
     setDraft({});
   };
 
-  const saveEdit = async (id: string) => {
+  const handleConfirm = async () => {
+    if (!confirm) return;
     try {
-      await update.mutateAsync({ id, data: draft });
-      setEditingId(null);
-      setDraft({});
+      if (confirm.type === 'approve') {
+        await approve.mutateAsync(confirm.proposalId);
+      } else if (confirm.type === 'reject') {
+        await reject.mutateAsync(confirm.proposalId);
+      } else {
+        await update.mutateAsync({ id: confirm.proposalId, data: draft });
+        setEditingId(null);
+        setDraft({});
+      }
     } catch (err) {
-      console.error('[vault-proposals] Error al guardar edición:', err);
-      toast.error('No se pudieron guardar los cambios.');
+      console.error('[vault-proposals] Error al ejecutar acción:', err);
+      toast.error('No se pudo completar la acción.');
+    } finally {
+      setConfirm(null);
     }
   };
 
@@ -203,9 +217,9 @@ export function VaultProposals() {
                     <Button
                       className="bg-blue-600 hover:bg-blue-700 text-white"
                       disabled={update.isPending}
-                      onClick={() => saveEdit(proposal.id)}
+                      onClick={() => setConfirm({ type: 'save', proposalId: proposal.id })}
                     >
-                      {update.isPending ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : <Save className="w-4 h-4 mr-2" />}
+                      <Save className="w-4 h-4 mr-2" />
                       Guardar cambios
                     </Button>
                   </>
@@ -223,25 +237,17 @@ export function VaultProposals() {
                       variant="secondary"
                       className="text-red-600 hover:text-red-700 hover:bg-red-50 border-red-200"
                       disabled={approve.isPending || reject.isPending}
-                      onClick={() => reject.mutate(proposal.id)}
+                      onClick={() => setConfirm({ type: 'reject', proposalId: proposal.id })}
                     >
-                      {reject.isPending && reject.variables === proposal.id ? (
-                        <Loader2 className="w-4 h-4 animate-spin mr-2" />
-                      ) : (
-                        <XCircle className="w-4 h-4 mr-2" />
-                      )}
+                      <XCircle className="w-4 h-4 mr-2" />
                       Rechazar
                     </Button>
                     <Button
                       className="bg-green-600 hover:bg-green-700 text-white"
                       disabled={approve.isPending || reject.isPending}
-                      onClick={() => approve.mutate(proposal.id)}
+                      onClick={() => setConfirm({ type: 'approve', proposalId: proposal.id })}
                     >
-                      {approve.isPending && approve.variables === proposal.id ? (
-                        <Loader2 className="w-4 h-4 animate-spin mr-2" />
-                      ) : (
-                        <CheckCircle2 className="w-4 h-4 mr-2" />
-                      )}
+                      <CheckCircle2 className="w-4 h-4 mr-2" />
                       Aprobar y Commitear
                     </Button>
                   </>
@@ -251,6 +257,35 @@ export function VaultProposals() {
           );
         })}
       </div>
+
+      <ConfirmDialog
+        open={!!confirm}
+        title={
+          confirm?.type === 'approve'
+            ? 'Aprobar y commitear propuesta'
+            : confirm?.type === 'reject'
+              ? 'Rechazar propuesta'
+              : 'Guardar cambios en la propuesta'
+        }
+        message={
+          confirm?.type === 'approve'
+            ? 'Esta acción commitea el texto a la Bóveda y alimenta el RAG del producto. No se puede deshacer.'
+            : confirm?.type === 'reject'
+              ? 'La propuesta se marcará como rechazada y no se aplicará a la Bóveda.'
+              : 'Los cambios se guardarán sobre la propuesta original generada por la IA.'
+        }
+        confirmLabel={
+          confirm?.type === 'approve'
+            ? 'Sí, aprobar y commitear'
+            : confirm?.type === 'reject'
+              ? 'Sí, rechazar'
+              : 'Sí, guardar cambios'
+        }
+        tone={confirm?.type === 'approve' || confirm?.type === 'reject' ? 'danger' : 'default'}
+        loading={approve.isPending || reject.isPending || update.isPending}
+        onConfirm={handleConfirm}
+        onCancel={() => setConfirm(null)}
+      />
     </div>
   );
 }
