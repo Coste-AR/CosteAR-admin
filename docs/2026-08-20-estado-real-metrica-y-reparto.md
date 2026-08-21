@@ -578,6 +578,12 @@ gh issue list --state open --label "area:costeo" --json number,title
 | C5 | Conectar `desperdicio.ts` a `runCalculation` (L3) | [#92](https://github.com/Coste-AR/CosteAR-backend/issues/92) | 🟡 En review, **parcial** | [#107](https://github.com/Coste-AR/CosteAR-backend/pull/107) → **#106** | backend#0008 |
 | C5b | CRUD y pantalla para cargar desperdicios | [#92](https://github.com/Coste-AR/CosteAR-backend/issues/92) | ⚪ Sin empezar — **cero rutas, cero servicios: la tabla no se lee ni se escribe** | — | — |
 
+> 🚨 **21-08 — la cadena apilada se mergeó mal y tres arreglos NO llegaron a `dev`.** #103 y #104
+> entraron bien; #105, #106 y #107 se mergearon **contra su rama de abajo**, así que quedaron en
+> ramas muertas con el tilde verde puesto. Se recuperan en el PR
+> [#110](https://github.com/Coste-AR/CosteAR-backend/pull/110), sin reescribir los commits.
+> **Es la segunda vez que pasa lo mismo** (la primera fue el 18-08 y de ahí salió REV-08). Ver §9.3.
+
 ⚠️ **Cadena de PRs apilados**, porque tocan las mismas líneas del mismo archivo:
 
 ```
@@ -606,6 +612,15 @@ mergea el mismo día que se abre (REV-07).
 | C5 — la decisión que más podía salir mal | `imputarDesperdicios` devuelve un `alCosto`, y la pregunta era si se SUMA al costo de producción. **No.** Ese costo ya está adentro: la MP desperdiciada salió del almacén y la ficha de stock la registró como consumo. Sumarla otra vez es **doble conteo silencioso** — infla el costo unitario de todo el mes sin ningún error que lo delate. Se verificó contra tres fuentes independientes antes de escribir una línea: la clase 4 (trabaja por cantidad **bruta**), el motor de Procesos (`normalLossAbsorbedAutomatically`) y el issue #45 del frontend, que dice desde el otro lado que lo extraordinario **reduce** el costo. Eso resuelve además el criterio de cierre 5: los dos caminos coinciden. |
 | C5 — gap declarado | **El dato no puede entrar por ningún lado.** `desperdicio_registros` tiene cero rutas y cero servicios: su única mención fuera del dominio es la lista de modelos con RLS. Conectar la lectura hoy devolvería siempre una lista vacía — otra pieza construida y nunca enchufada, que es lo que el propio issue denuncia. Falta el CRUD y la pantalla, y **el issue queda abierto**. |
 | Riesgo que se abre | Una estructura ya cargada a la que le falte un reparto **deja de calcular**. Es deliberado —antes calculaba mal— pero se puede leer como "se rompió". No se puede dimensionar sin mirar los datos de producción, y eso depende del Bloque E. |
+
+### 9.3 Bitácora — 21-08-2026
+
+| Hito | Qué pasó |
+|---|---|
+| Merge de la cadena | Los cinco PRs se mergearon. **Tres no llegaron a `dev`**: #105, #106 y #107 entraron cada uno en la rama de abajo, que ya nadie mira. GitHub los marcó `MERGED` en verde. Verificado sobre `origin/dev`: faltaban los ADR 0007 y 0008 y tres archivos de test. |
+| Recuperación | PR [#110](https://github.com/Coste-AR/CosteAR-backend/pull/110): los tres commits huérfanos tal cual, más el merge de `dev`, sin conflictos. **Sin `cherry-pick` ni `rebase`**: reescribir la identidad de los commits deja el mismo arreglo figurando dos veces y después nadie sabe cuál manda. |
+| Lo que esto dice del método | **REV-08 ya existía, escrita, por este mismo accidente del 18-08 — y volvió a pasar.** Una regla que hay que recordar en el momento exacto del merge no alcanza. O se evitan los PRs apilados salvo necesidad real, o hace falta un chequeo automático que avise cuando un PR apunta a algo que no es `dev`. **Esto mueve el indicador A3 y es una decisión de proceso pendiente.** |
+| Hallazgo lateral | `empresa-connection-whatsapp.test.ts` **falla por timeout de 5 s cuando la máquina está cargada** y pasa en 956 ms aislado. Preexistente y ajeno a estos cambios, pero un test flaky termina pintando el CI de rojo y erosionando la confianza en el semáforo. Sin issue todavía. |
 
 ---
 
