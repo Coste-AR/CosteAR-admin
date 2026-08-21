@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Building2, ChevronRight, Save, ToggleLeft, ToggleRight, Tag } from 'lucide-react';
+import { AlertTriangle, Building2, ChevronRight, Save, ToggleLeft, ToggleRight, Tag } from 'lucide-react';
 import { useIndustryProfiles, useUpdateIndustryProfileMutation, type IndustryProfile } from '../admin-hooks';
 import { Card } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
@@ -112,6 +112,7 @@ function ProfileEditor({
 }) {
   const { mutateAsync: update, isPending } = useUpdateIndustryProfileMutation();
   const [state, setState] = useState<EditorState>(() => profileToEditorState(profile));
+  const [validationError, setValidationError] = useState<string | null>(null);
 
   useEffect(() => {
     setState(profileToEditorState(profile));
@@ -121,16 +122,26 @@ function ProfileEditor({
     setState((prev) => ({ ...prev, [key]: val }));
 
   const handleSave = async () => {
+    const mp = textToKeywords(state.mpKeywords);
+    const patterns = textToKeywords(state.detectPatterns);
+    if (mp.length === 0 || patterns.length === 0) {
+      const missing = [mp.length === 0 && 'Materia Prima', patterns.length === 0 && 'Patrones de detección']
+        .filter(Boolean)
+        .join(' y ');
+      setValidationError(`${missing} no puede quedar vacío — el clasificador no va a funcionar para este rubro.`);
+      return;
+    }
+    setValidationError(null);
     await update({
       category: profile.category,
       data: {
         label: state.label.trim() || undefined,
-        mpKeywords: textToKeywords(state.mpKeywords),
+        mpKeywords: mp,
         cipKeywords: textToKeywords(state.cipKeywords),
         modKeywords: textToKeywords(state.modKeywords),
         eventKeywords: textToKeywords(state.eventKeywords),
         lossKeywords: textToKeywords(state.lossKeywords),
-        detectPatterns: textToKeywords(state.detectPatterns),
+        detectPatterns: patterns,
         measurementUnit: state.measurementUnit.trim() || null,
         energyIsMP: state.energyIsMP,
         fuelIsMP: state.fuelIsMP,
@@ -225,7 +236,13 @@ function ProfileEditor({
         />
       </div>
 
-      <div className="px-6 py-4 border-t border-line shrink-0">
+      <div className="px-6 py-4 border-t border-line shrink-0 space-y-3">
+        {validationError && (
+          <div className="flex items-start gap-2 rounded-lg bg-danger/5 border border-danger/20 px-3 py-2.5 text-[12px] text-danger font-medium">
+            <AlertTriangle className="size-3.5 shrink-0 mt-0.5" />
+            {validationError}
+          </div>
+        )}
         <Button
           onClick={handleSave}
           loading={isPending}
