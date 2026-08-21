@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { createPortal } from 'react-dom';
+import toast from 'react-hot-toast';
 import { useAdminUsers, useCreateAdminUserMutation } from '../admin-hooks';
 import { Card } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
@@ -29,6 +30,7 @@ export function AdminUsers() {
       setErrorMsg('');
       await createUser({ email, password, name, role });
       setSuccess(true);
+      toast.success(`Usuario "${name}" creado con éxito.`);
       setTimeout(() => {
         setSuccess(false);
         setShowForm(false);
