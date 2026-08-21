@@ -363,6 +363,8 @@ El control de cátedra para asignación directa (*"la suma de los departamentos 
 
 ### ✅ L3 — El costeo por órdenes no puede contabilizar desperdicio · **media**
 
+> 🟡 **PARCIAL el 21-08** — issue #92, PR [#107](https://github.com/Coste-AR/CosteAR-backend/pull/107), ADR backend#0008. El motor ya aplica R5; falta el CRUD y la pantalla para cargar el dato. Ver §9.
+
 **Confirmado, y es el caso más claro del patrón de §5.5.** El andamiaje está entero y desconectado: la tabla `desperdicio_registros` con `naturaleza` y `valorRecupero`, `src/domain/calculations/desperdicio.ts` (114 líneas implementando R5), y `tests/domain/amortizacion-y-desperdicio.test.ts` (181 líneas) — **los tres en staging**.
 
 Y el único `import` de `desperdicio.js` en todo el repo es **su propio archivo de test**. `runCalculation` nunca lo llama; `CalculationInput` no tiene dónde declararlo.
@@ -573,16 +575,17 @@ gh issue list --state open --label "area:costeo" --json number,title
 | C3 | CPV unitario dividido por producidas | [#88](https://github.com/Coste-AR/CosteAR-backend/issues/88) | 🟢 En review | [#105](https://github.com/Coste-AR/CosteAR-backend/pull/105) → **#104** | — |
 | C4 | Variación presupuesto en el estado de costos | [#90](https://github.com/Coste-AR/CosteAR-backend/issues/90) | 🟡 En review, **parcial** | [#106](https://github.com/Coste-AR/CosteAR-backend/pull/106) → **#105** | backend#0007 |
 | C4b | Trabajos de terceros | [#90](https://github.com/Coste-AR/CosteAR-backend/issues/90) | ⚪ Sin empezar — **entrada nueva, no existe en el modelo** | — | — |
-| C5 | Conectar `desperdicio.ts` a `runCalculation` (L3) | [#92](https://github.com/Coste-AR/CosteAR-backend/issues/92) | ⚪ Sin empezar | — | — |
+| C5 | Conectar `desperdicio.ts` a `runCalculation` (L3) | [#92](https://github.com/Coste-AR/CosteAR-backend/issues/92) | 🟡 En review, **parcial** | [#107](https://github.com/Coste-AR/CosteAR-backend/pull/107) → **#106** | backend#0008 |
+| C5b | CRUD y pantalla para cargar desperdicios | [#92](https://github.com/Coste-AR/CosteAR-backend/issues/92) | ⚪ Sin empezar — **cero rutas, cero servicios: la tabla no se lee ni se escribe** | — | — |
 
 ⚠️ **Cadena de PRs apilados**, porque tocan las mismas líneas del mismo archivo:
 
 ```
 dev ← #103 (independiente)
-dev ← #104 ← #105 ← #106
+dev ← #104 ← #105 ← #106 ← #107
 ```
 
-**Se mergean de abajo hacia arriba: #104, después #105, después #106** (REV-08). Ninguno se
+**Se mergean de abajo hacia arriba: #104, #105, #106 y #107** (REV-08). Ninguno se
 mergea el mismo día que se abre (REV-07).
 
 ### 9.2 Bitácora — 20-08-2026
@@ -600,6 +603,8 @@ mergea el mismo día que se abre (REV-07).
 | C4 — la doctrina, otra vez | La clase 28 define «normal = MP + MO + CIF aplicados; **real = normal + variación presupuesto**», y la clase 26 aclara que **la variación VOLUMEN va al estado de resultados, no al de costos**: es capacidad ociosa, pérdida de la empresa y no costo del producto. Se implementó la presupuesto y se dejó la volumen afuera **a propósito**. El dato ya lo calculaba el motor desde siempre y se usaba en anomalías y en el árbol: lo único que faltaba era traerlo al estado. |
 | C4 — cambia números viejos | ⚠️ **El CPV de todo período con variación presupuesto distinta de cero cambia**, y el margen bruto con él. En el caso Dorado son **$21.500 más de costo**. Es el arreglo funcionando, pero un período recalculado no va a dar igual que antes. Ningún fixture lo detectó **porque ninguno assertea el CPV de Dorado contra un número fijo** — dato que también dice algo sobre la cobertura, y que alimenta el indicador CD. |
 | C4 — gap declarado | **Los trabajos de terceros NO entraron.** No existen en el modelo: no hay campo, ni ruta, ni formulario. Es una entrada nueva de punta a punta, no una cuenta mal hecha. El PR es `part of #90` y **el issue queda abierto**. |
+| C5 — la decisión que más podía salir mal | `imputarDesperdicios` devuelve un `alCosto`, y la pregunta era si se SUMA al costo de producción. **No.** Ese costo ya está adentro: la MP desperdiciada salió del almacén y la ficha de stock la registró como consumo. Sumarla otra vez es **doble conteo silencioso** — infla el costo unitario de todo el mes sin ningún error que lo delate. Se verificó contra tres fuentes independientes antes de escribir una línea: la clase 4 (trabaja por cantidad **bruta**), el motor de Procesos (`normalLossAbsorbedAutomatically`) y el issue #45 del frontend, que dice desde el otro lado que lo extraordinario **reduce** el costo. Eso resuelve además el criterio de cierre 5: los dos caminos coinciden. |
+| C5 — gap declarado | **El dato no puede entrar por ningún lado.** `desperdicio_registros` tiene cero rutas y cero servicios: su única mención fuera del dominio es la lista de modelos con RLS. Conectar la lectura hoy devolvería siempre una lista vacía — otra pieza construida y nunca enchufada, que es lo que el propio issue denuncia. Falta el CRUD y la pantalla, y **el issue queda abierto**. |
 | Riesgo que se abre | Una estructura ya cargada a la que le falte un reparto **deja de calcular**. Es deliberado —antes calculaba mal— pero se puede leer como "se rompió". No se puede dimensionar sin mirar los datos de producción, y eso depende del Bloque E. |
 
 ---
