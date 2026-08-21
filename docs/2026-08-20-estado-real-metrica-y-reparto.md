@@ -18,6 +18,7 @@
 6. [Lo que ninguna auditoría vio](#6-lo-que-ninguna-auditoría-vio)
 7. [Reparto de trabajo](#7-reparto-de-trabajo)
 8. [Qué hay que cerrar antes de repartir](#8-qué-hay-que-cerrar-antes-de-repartir)
+9. [Bitácora de ejecución](#9-bitácora-de-ejecución)
 
 ---
 
@@ -330,6 +331,8 @@ No es error de criterio técnico: es error de método. **Una auditoría que no l
 
 ### ✅ L1 — El costo entero de un centro de servicio desaparece en silencio · **alta**
 
+> 🟢 **RESUELTO el 20-08** — issue #91, PR [#103](https://github.com/Coste-AR/CosteAR-backend/pull/103), ADR backend#0005. En review, sin mergear. Ver §9.
+
 **Confirmado.** En la pasada directa (`closureOrder` vacío o ausente), un centro de servicio sin reparto secundario se saltea: su costo primario completo se evapora del presupuesto, la cuota, el CIP aplicado y el costo unitario. Sin error, sin warning, `pendingClosing` en `false`, y el chequeo de consistencia de MP verde.
 
 ```
@@ -414,8 +417,8 @@ Rama `chore/anonimizar-datos-cliente` (+9) sin mergear.
 
 Detalle en el indicador **A2** (§2.3). Los tres del tablero:
 
-- **#89 (alta)** — `calculate.ts:599`: el costo unitario de producción divide el costo del período por las **terminadas**, sin pasar por la producción en proceso. **Es el número con el que el cliente pone precio.**
-- **#88 (media)** — `calculate.ts:602`: el CPV unitario se divide por **producidas** en vez de **vendidas**. Regresión del 18-08 introducida por un arreglo correcto (`3b9e8ae` arregló un divisor; el otro heredó el error).
+- **#89 (alta)** 🟢 **RESUELTO el 20-08 (PR [#104](https://github.com/Coste-AR/CosteAR-backend/pull/104), ADR 0006) — pero NO como decía el issue.** `calculate.ts:599`: el costo unitario de producción divide el costo del período sin pasar por la producción en proceso. **Es el número con el que el cliente pone precio.** ⚠️ **La cátedra dice que esa fórmula es la correcta** (clase 2, práctica resuelta: `costo de producción ÷ unidades`, renglón anterior al ajuste por proceso). Lo que faltaba era el renglón siguiente. Ver §9.
+- **#88 (media)** 🟢 **RESUELTO el 20-08 (PR [#105](https://github.com/Coste-AR/CosteAR-backend/pull/105)).** `calculate.ts:602`: el CPV unitario se divide por **producidas** en vez de **vendidas**. Regresión del 18-08 introducida por un arreglo correcto (`3b9e8ae` arregló un divisor; el otro heredó el error). Mismo defecto en `freeze-process-period.ts`, también corregido.
 - **#90 (media)** — `cost-statement.ts`: el estado de costos salta del costo **normal** directo a productos terminados, omitiendo *trabajos de terceros* y *variación presupuesto*. Bloquea el Estado de Resultados.
 
 Los tres se reproducen en `dev` (`0e4c021`) **y en `staging` (`04f21f9`)** — la misma rama que auditó Julie.
@@ -552,6 +555,42 @@ git grep -ohE "FX-(P[1-6]|J[1-3]|O[1-6])" origin/staging -- tests | sort -u | wc
 # A2 · Tasa de Defecto en Números
 gh issue list --state open --label "area:costeo" --json number,title
 ```
+
+---
+
+## 9. Bitácora de ejecución
+
+> Se actualiza **a medida que avanza cada bloque**, no al final. Una fila por hito real, con el
+> link que lo prueba. Si algo se decidió distinto de como estaba planeado, se escribe acá **por
+> qué**: el registro de por qué se cambió de opinión vale más que el estado actual.
+
+### 9.1 Bloque C — El motor de costeo (Santiago)
+
+| # | Qué | Issue | Estado | PR | ADR |
+|---|---|---|---|---|---|
+| C1 | Centro de servicio que desaparece (L1) | [#91](https://github.com/Coste-AR/CosteAR-backend/issues/91) | 🟢 En review | [#103](https://github.com/Coste-AR/CosteAR-backend/pull/103) → `dev` | backend#0005 |
+| C2 | El costo unitario ignora la producción en proceso | [#89](https://github.com/Coste-AR/CosteAR-backend/issues/89) | 🟢 En review | [#104](https://github.com/Coste-AR/CosteAR-backend/pull/104) → `dev` | backend#0006 |
+| C3 | CPV unitario dividido por producidas | [#88](https://github.com/Coste-AR/CosteAR-backend/issues/88) | 🟢 En review | [#105](https://github.com/Coste-AR/CosteAR-backend/pull/105) → **#104** | — |
+| C4 | Trabajos de terceros y variación presupuesto | [#90](https://github.com/Coste-AR/CosteAR-backend/issues/90) | ⚪ Sin empezar | — | — |
+| C5 | Conectar `desperdicio.ts` a `runCalculation` (L3) | [#92](https://github.com/Coste-AR/CosteAR-backend/issues/92) | ⚪ Sin empezar | — | — |
+
+⚠️ **El PR #105 está apilado sobre el #104** porque tocan las mismas líneas del mismo archivo.
+**Se mergean de abajo hacia arriba: primero #104, después #105** (REV-08). Ninguno se mergea el
+mismo día que se abre (REV-07).
+
+### 9.2 Bitácora — 20-08-2026
+
+| Hito | Qué pasó |
+|---|---|
+| C1 implementado | La guarda se puso en el **despacho** (`resolveProductiveCip`) y no adentro de cada pasada. Motivo: **la pasada escalonada tenía el mismo agujero por otra puerta** —un servicio que no figura en `closureOrder` nunca cierra y la salida solo copia los productivos—, cosa que la auditoría no vio. El despacho es el único punto que conoce a la vez el universo de centros, su costo primario y qué método se va a usar. |
+| C1 — hallazgo no reportado | `secondaryProration` **mutaba** el objeto del prorrateo primario del llamador (guardaba la referencia y después le reasignaba los campos). No cambiaba ningún número porque nadie releía el primario, pero invalida cualquier control que compare las dos etapas. Se arregló en el mismo PR, como commit aparte. |
+| C1 — criterio no cumplible | El criterio de cierre pedía un test *"exactamente sobre D01"*. **El dataset D01 no existe en ninguno de los cuatro repos**: solo están sus números en este documento. Se cubrió con el fixture *Dorado*, que sí vive en el repo y tiene el mismo centro de mantenimiento. Si D01 está en la máquina de Lautaro, que lo reproduzca ahí. |
+| C2 — **el issue estaba equivocado** | El issue pedía cambiar el numerador de `unitProductionCost`. Se fue a la bóveda antes de tocar la fórmula y la **clase 2 de Mirta** define el costo unitario de producción como `costo de producción ÷ unidades`, renglón anterior al ajuste por producción en proceso ($2.306.000 ÷ 4.612 kg = $500/kg). O sea: **la fórmula que el código ya tenía es la de la cátedra, y que no se mueva es su definición**. Lo que faltaba era el renglón siguiente del estado de costos. Se agregó `unitFinishedGoodsCost` **al lado** del existente, sin tocarlo. Alternativas descartadas en el ADR 0006. |
+| C2 — decisión de doctrina | Queda fijado que **`productionQuantity` son las unidades terminadas del período**. De eso depende el divisor del renglón nuevo. Si esa definición cambia, el ADR 0006 se revisa entero. |
+| C3 — el test bendecía el bug | Existía un test llamado *"el COGS unitario usa el mismo divisor que el costo de producción unitario"*, que afirma lo contrario de lo que dice la cátedra. **La suite certificaba el defecto.** Su fixture además ponía las cuatro existencias en cero, lo que hace la diferencia invisible, mientras declaraba "producir 100 y vender 60" — un escenario imposible. Reescrito, y los tests nuevos usan existencias reales. |
+| Verificación | Suite completa en **1331 tests, 0 fallidos**; `npm run typecheck` limpio; `npm run lint` con los 20 warnings preexistentes de `no-explicit-any` y 0 errores. Los fixtures de cátedra y los tres de ITCS dan exactamente lo mismo (DOM-05). |
+| Pendiente que se abre | **`unitFinishedGoodsCost` no se muestra en ninguna pantalla** (`ResultTab.tsx:308` sigue pintando solo el viejo). Es cambio del repo de frontend, no se metió sin avisar. Mientras tanto es exactamente el patrón de §5.5 y del issue #98: algo calculado que nadie consume. |
+| Riesgo que se abre | Una estructura ya cargada a la que le falte un reparto **deja de calcular**. Es deliberado —antes calculaba mal— pero se puede leer como "se rompió". No se puede dimensionar sin mirar los datos de producción, y eso depende del Bloque E. |
 
 ---
 
