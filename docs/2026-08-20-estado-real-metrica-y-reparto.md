@@ -419,7 +419,7 @@ Detalle en el indicador **A2** (§2.3). Los tres del tablero:
 
 - **#89 (alta)** 🟢 **RESUELTO el 20-08 (PR [#104](https://github.com/Coste-AR/CosteAR-backend/pull/104), ADR 0006) — pero NO como decía el issue.** `calculate.ts:599`: el costo unitario de producción divide el costo del período sin pasar por la producción en proceso. **Es el número con el que el cliente pone precio.** ⚠️ **La cátedra dice que esa fórmula es la correcta** (clase 2, práctica resuelta: `costo de producción ÷ unidades`, renglón anterior al ajuste por proceso). Lo que faltaba era el renglón siguiente. Ver §9.
 - **#88 (media)** 🟢 **RESUELTO el 20-08 (PR [#105](https://github.com/Coste-AR/CosteAR-backend/pull/105)).** `calculate.ts:602`: el CPV unitario se divide por **producidas** en vez de **vendidas**. Regresión del 18-08 introducida por un arreglo correcto (`3b9e8ae` arregló un divisor; el otro heredó el error). Mismo defecto en `freeze-process-period.ts`, también corregido.
-- **#90 (media)** — `cost-statement.ts`: el estado de costos salta del costo **normal** directo a productos terminados, omitiendo *trabajos de terceros* y *variación presupuesto*. Bloquea el Estado de Resultados.
+- **#90 (media)** 🟡 **PARCIAL el 20-08 (PR [#106](https://github.com/Coste-AR/CosteAR-backend/pull/106), ADR 0007).** `cost-statement.ts`: el estado de costos salta del costo **normal** directo a productos terminados, omitiendo *trabajos de terceros* y *variación presupuesto*. Bloquea el Estado de Resultados. **La variación presupuesto ya entra; los trabajos de terceros no, porque no existen en el modelo.** Ver §9.
 
 Los tres se reproducen en `dev` (`0e4c021`) **y en `staging` (`04f21f9`)** — la misma rama que auditó Julie.
 
@@ -571,12 +571,19 @@ gh issue list --state open --label "area:costeo" --json number,title
 | C1 | Centro de servicio que desaparece (L1) | [#91](https://github.com/Coste-AR/CosteAR-backend/issues/91) | 🟢 En review | [#103](https://github.com/Coste-AR/CosteAR-backend/pull/103) → `dev` | backend#0005 |
 | C2 | El costo unitario ignora la producción en proceso | [#89](https://github.com/Coste-AR/CosteAR-backend/issues/89) | 🟢 En review | [#104](https://github.com/Coste-AR/CosteAR-backend/pull/104) → `dev` | backend#0006 |
 | C3 | CPV unitario dividido por producidas | [#88](https://github.com/Coste-AR/CosteAR-backend/issues/88) | 🟢 En review | [#105](https://github.com/Coste-AR/CosteAR-backend/pull/105) → **#104** | — |
-| C4 | Trabajos de terceros y variación presupuesto | [#90](https://github.com/Coste-AR/CosteAR-backend/issues/90) | ⚪ Sin empezar | — | — |
+| C4 | Variación presupuesto en el estado de costos | [#90](https://github.com/Coste-AR/CosteAR-backend/issues/90) | 🟡 En review, **parcial** | [#106](https://github.com/Coste-AR/CosteAR-backend/pull/106) → **#105** | backend#0007 |
+| C4b | Trabajos de terceros | [#90](https://github.com/Coste-AR/CosteAR-backend/issues/90) | ⚪ Sin empezar — **entrada nueva, no existe en el modelo** | — | — |
 | C5 | Conectar `desperdicio.ts` a `runCalculation` (L3) | [#92](https://github.com/Coste-AR/CosteAR-backend/issues/92) | ⚪ Sin empezar | — | — |
 
-⚠️ **El PR #105 está apilado sobre el #104** porque tocan las mismas líneas del mismo archivo.
-**Se mergean de abajo hacia arriba: primero #104, después #105** (REV-08). Ninguno se mergea el
-mismo día que se abre (REV-07).
+⚠️ **Cadena de PRs apilados**, porque tocan las mismas líneas del mismo archivo:
+
+```
+dev ← #103 (independiente)
+dev ← #104 ← #105 ← #106
+```
+
+**Se mergean de abajo hacia arriba: #104, después #105, después #106** (REV-08). Ninguno se
+mergea el mismo día que se abre (REV-07).
 
 ### 9.2 Bitácora — 20-08-2026
 
@@ -590,6 +597,9 @@ mismo día que se abre (REV-07).
 | C3 — el test bendecía el bug | Existía un test llamado *"el COGS unitario usa el mismo divisor que el costo de producción unitario"*, que afirma lo contrario de lo que dice la cátedra. **La suite certificaba el defecto.** Su fixture además ponía las cuatro existencias en cero, lo que hace la diferencia invisible, mientras declaraba "producir 100 y vender 60" — un escenario imposible. Reescrito, y los tests nuevos usan existencias reales. |
 | Verificación | Suite completa en **1331 tests, 0 fallidos**; `npm run typecheck` limpio; `npm run lint` con los 20 warnings preexistentes de `no-explicit-any` y 0 errores. Los fixtures de cátedra y los tres de ITCS dan exactamente lo mismo (DOM-05). |
 | Pendiente que se abre | **`unitFinishedGoodsCost` no se muestra en ninguna pantalla** (`ResultTab.tsx:308` sigue pintando solo el viejo). Es cambio del repo de frontend, no se metió sin avisar. Mientras tanto es exactamente el patrón de §5.5 y del issue #98: algo calculado que nadie consume. |
+| C4 — la doctrina, otra vez | La clase 28 define «normal = MP + MO + CIF aplicados; **real = normal + variación presupuesto**», y la clase 26 aclara que **la variación VOLUMEN va al estado de resultados, no al de costos**: es capacidad ociosa, pérdida de la empresa y no costo del producto. Se implementó la presupuesto y se dejó la volumen afuera **a propósito**. El dato ya lo calculaba el motor desde siempre y se usaba en anomalías y en el árbol: lo único que faltaba era traerlo al estado. |
+| C4 — cambia números viejos | ⚠️ **El CPV de todo período con variación presupuesto distinta de cero cambia**, y el margen bruto con él. En el caso Dorado son **$21.500 más de costo**. Es el arreglo funcionando, pero un período recalculado no va a dar igual que antes. Ningún fixture lo detectó **porque ninguno assertea el CPV de Dorado contra un número fijo** — dato que también dice algo sobre la cobertura, y que alimenta el indicador CD. |
+| C4 — gap declarado | **Los trabajos de terceros NO entraron.** No existen en el modelo: no hay campo, ni ruta, ni formulario. Es una entrada nueva de punta a punta, no una cuenta mal hecha. El PR es `part of #90` y **el issue queda abierto**. |
 | Riesgo que se abre | Una estructura ya cargada a la que le falte un reparto **deja de calcular**. Es deliberado —antes calculaba mal— pero se puede leer como "se rompió". No se puede dimensionar sin mirar los datos de producción, y eso depende del Bloque E. |
 
 ---
