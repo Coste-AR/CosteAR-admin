@@ -19,7 +19,7 @@
  */
 
 import { execFileSync } from 'node:child_process';
-import { cpSync, existsSync, mkdirSync, readdirSync, rmSync } from 'node:fs';
+import { cpSync, existsSync, mkdirSync, readdirSync, readFileSync, rmSync } from 'node:fs';
 import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
@@ -90,6 +90,49 @@ if (skills.length === 0) {
 }
 
 console.log(`Skills a propagar (${skills.length}): ${skills.join(', ')}\n`);
+
+
+/**
+ * GUARDIA DE DATOS DEL CLIENTE (CLI-01).
+ *
+ * Este repo es PRIVADO; backend y frontend son PUBLICOS. Sin este chequeo, el sync
+ * publica hacia afuera cualquier nombre de cliente que se haya escrito aca adentro
+ * — y encima lo hace REVIRTIENDO una anonimizacion previa, porque sobreescribe el
+ * destino.
+ *
+ * No es hipotetico: el 22-08-2026 el sync intento reponer el nombre de pila del
+ * betatester en `costear-issue`, donde ya estaba anonimizado en el repo publico. El
+ * 18-08 ya se habia publicado la estructura de costos de ese mismo cliente, y el
+ * historial de git es permanente.
+ *
+ * Ante una coincidencia CORTA y no copia nada: es mas barato revisar un falso
+ * positivo que despublicar un dato.
+ */
+const TERMINOS_PROHIBIDOS = [/\bAugusto\b/i, /pico\s+de\s+oro/i, /av[ií]cola\s+saenz/i];
+
+const hallazgos = [];
+for (const skill of skills) {
+  const dir = join(SKILLS_DIR, skill);
+  for (const entrada of readdirSync(dir, { recursive: true, withFileTypes: true })) {
+    if (!entrada.isFile()) continue;
+    const ruta = join(entrada.parentPath ?? entrada.path ?? dir, entrada.name);
+    const contenido = readFileSync(ruta, 'utf-8');
+    for (const re of TERMINOS_PROHIBIDOS) {
+      const m = contenido.match(re);
+      if (m) hallazgos.push(`  ${skill}/${entrada.name}: "${m[0]}"`);
+    }
+  }
+}
+
+if (hallazgos.length > 0) {
+  console.error('\n✗ DATOS DE CLIENTE EN LAS SKILLS - no se sincroniza nada (CLI-01).\n');
+  console.error(hallazgos.join('\n'));
+  console.error(
+    '\nbackend y frontend son repos PUBLICOS y el historial de git es permanente.\n' +
+      'Saca el dato de la copia canonica de este repo y volve a correr el sync.',
+  );
+  process.exit(1);
+}
 
 let sincronizados = 0;
 
