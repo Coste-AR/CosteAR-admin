@@ -22,51 +22,12 @@
 
 ## 0.bis La filosofía: diagnosticar, planificar, recién ahí implementar
 
-> **Esta es la forma de trabajar, no una recomendación.** Vale para código, para infraestructura,
-> para procesos y para cualquier problema que aparezca. Se escribió el 22-08-2026, después de que
-> aplicarla encontrara en una tarde la causa de tres días de re-trabajo.
-
-**Los tres pasos, en orden, siempre:**
-
-| Paso | Qué significa | Qué NO es |
-|---|---|---|
-| **1. Diagnosticar** | Medir qué está pasando, con números y comandos reproducibles. Descartar primero lo que **no** es el problema. | No es opinar, ni suponer, ni empezar a arreglar lo primero que se ve |
-| **2. Planificar** | Escribir el plan **antes** de ejecutarlo: fases independientes, con su costo y lo que cierra cada una. Y las **alternativas descartadas, con el motivo**. | No es una lista de tareas: si no dice por qué se eligió eso y no otra cosa, no es un plan |
-| **3. Implementar** | Recién acá se toca algo. Y se verifica **en el entorno donde el trabajo va a vivir**, no donde uno está parado. | No es "empiezo y veo" |
-
-**Por qué importa, con el caso que lo probó:** el 20 y 21-08 se arreglaron cinco defectos del motor
-de costeo, y en el medio se perdieron horas en re-trabajo. La reacción natural era escribir otra
-regla. En vez de eso se midió: **de 24 PRs en tres días, 4 no agregaron nada** — existían solo para
-recuperar trabajo ya hecho. Con ese número, la causa apareció sola, y resultó ser **cuatro casillas
-de configuración apagadas**, no una falta de disciplina.
-
-**Sin el diagnóstico, se habría arreglado el problema equivocado.**
-
-### Las tres trampas que este orden evita
-
-1. **Arreglar el síntoma.** Los tres primeros incidentes parecían culpa de los PRs apilados. El
-   cuarto fue un PR simple: el apilamiento agravaba, no causaba. Prohibir los apilados habría
-   costado trabajo y no habría arreglado nada.
-2. **Escribir una regla en vez de un control.** REV-08 se escribió el 18-08 por un accidente
-   concreto y volvió a pasar tres veces en tres días. **Una regla que hay que recordar en el momento
-   exacto no es un control: es una intención.** Si algo tiene que pasar siempre, se automatiza o se
-   configura; escribirlo es el último recurso, no el primero.
-3. **Verificar donde uno está parado.** Un test que pasaba en la máquina del dev no cargaba en el
-   CI. Un instructivo escrito en sintaxis de bash para alguien que usa PowerShell. **Verificar es
-   verificar allá, no acá.**
-
-### Cómo se aplica en el día a día
-
-- **Antes de escribir código para un problema nuevo:** medir primero. Un comando que devuelva un
-  número vale más que un párrafo de análisis.
-- **Todo diagnóstico y todo plan quedan escritos** en el documento consolidado de `CosteAR-admin`
-  (`docs/`), no en un `.md` nuevo. Con las alternativas descartadas.
-- **Lo que salió mal se escribe igual**, y con el mismo detalle que lo que salió bien: es de donde
-  sale el diagnóstico siguiente.
-- **Al terminar, se anota en la bitácora** (`/costear-bitacora`), en castellano llano.
-
-> Si el trabajo empieza por el paso 3, en algún momento se vuelve al 1 — pero habiendo gastado el
-> tiempo dos veces.
+**La forma de trabajar, no una recomendación.** Diagnosticar con números → planificar con
+alternativas descartadas → recién ahí implementar, y verificar donde el trabajo va a vivir, no
+donde uno está parado. Se movió el 22-08-2026 para no cargarla en cada sesión sin importar la
+tarea. La versión completa —con el caso que la probó y el detalle de cada trampa— vive en
+[`docs/2026-08-22-filosofia-diagnosticar-planificar-implementar.md`](https://github.com/Coste-AR/CosteAR-admin/blob/dev/docs/2026-08-22-filosofia-diagnosticar-planificar-implementar.md)
+de este mismo repo (fuente canónica: el Second Brain de Santiago, fuera de los repos de código).
 
 ---
 
@@ -156,22 +117,10 @@ nada: la rama, si `origin/dev` avanzó, los PRs abiertos, los issues asignados y
 
 ## 4. La bitácora — cómo se mantiene
 
-```
-bitacora/
-├── README.md      ← cómo funciona (y las 10 reglas de oro del equipo)
-├── INDICE.md      ← tabla maestra, una fila por entrada, más reciente arriba
-└── sesiones/
-    └── YYYY-MM-DD-<repo>-<slug>.md
-```
-
-|ID|Regla|
-|---|---|
-|**BIT-01**|**Una entrada por sesión de trabajo.** La escribe `/costear-bitacora`, no se hace a mano.|
-|**BIT-02**|**Se escribe para Alan y Lauti, que no son devs.** Nada de jerga sin explicar. Si hace falta un término técnico, se aclara entre paréntesis.|
-|**BIT-03**|**Toda entrada linkea a los PRs y ADRs reales.** Una entrada sin links no sirve como trazabilidad.|
-|**BIT-04**|**Nunca se edita una entrada vieja para "corregir la historia".** Si algo cambió, es una entrada nueva que referencia a la anterior.|
-|**BIT-05**|El `INDICE.md` se actualiza en el mismo commit que la entrada.|
-|**BIT-06**|**Nada de credenciales, tokens ni datos del cliente en la bitácora.** Aunque el repo sea privado.|
+**BIT-01 a BIT-06** — una entrada por sesión, escrita para no-devs, siempre linkeada a PRs/ADRs
+reales, nunca editada para "corregir la historia", el índice actualizado en el mismo commit, y
+nada de credenciales ni datos del cliente ahí. **Viven en `.claude/rules/bitacora.md`**: cargan
+solo al tocar `bitacora/`.
 
 ---
 
@@ -253,6 +202,8 @@ Por eso `/costear-bitacora` al cerrar una sesión (DOC-03) y el ADR en el mismo 
 
 |Fecha|Qué cambió|Fuente|
 |---|---|---|
+|2026-08-22|**0.bis sale de acá.** La filosofía (diagnosticar/planificar/implementar) cargaba en TODAS las sesiones sin importar la tarea. El resumen operativo queda inline; la versión completa vive en `CosteAR-admin/docs/2026-08-22-filosofia-diagnosticar-planificar-implementar.md` (espejo del Second Brain de Santiago, que es la fuente canónica). Se evaluó y descartó ponerla en `costear-knowledge-base`: ese repo alimenta el RAG del clasificador y mete cualquier `.md` al índice — se habría mezclado con la doctrina de costeo.|Santiago|
+|2026-08-22|**Pieza 1 — BIT-01..06 se mudan a `.claude/rules/bitacora.md`**, scoped a `bitacora/**`. Antes cargaban en todas las sesiones; ahora solo al tocar la bitácora.|Santiago|
 |2026-08-22|**PR-04/05/06**: el PR nace en draft, se mergea con `--auto`, y después se verifica que el trabajo llegó. Reemplazan por mecanismo lo que REV-08 pedía recordar. La skill `/costear-pr` ya crea los PRs en borrador.|Santiago|
 |2026-08-22|**Sección 0.bis — la filosofía: diagnosticar, planificar, recién ahí implementar.** Se escribió después de que aplicarla encontrara, en una tarde, la causa de tres días de re-trabajo: cuatro casillas de configuración apagadas, no falta de disciplina. Incluye las tres trampas que el orden evita.|Santiago|
 |2026-08-18|Secciones **5.bis** (datos de clientes en repos públicos, CLI-01 a CLI-04) y **6.bis** (protocolo de revisión, REV-01 a REV-08). Las dos salen de cosas que pasaron ese día: se publicó la estructura de costos de un betatester en un repo público, y ocho PRs se mergearon el mismo día que se abrieron.|Santiago|
