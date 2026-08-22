@@ -72,6 +72,9 @@ feature-branch → dev → staging → main
 |**GIT-02**|Las ramas salen de **`dev`**.|
 |**GIT-03**|Nombre: `<tipo>/<slug-corto>` — solo `a-z0-9-`, máximo 40 caracteres.|
 |**GIT-04**|`main` solo desde `staging`; `staging` solo desde `dev`.|
+|**PR-04**|**Todo PR nace en DRAFT.** GitHub **impide mergear un borrador**: mientras el trabajo crece, nadie lo mergea por error. Se marca `gh pr ready` cuando está listo de verdad — y se dice **«terminé de pushear»**. Entre el 20 y el 22-08 se perdieron 4 PRs de trabajo por mergear PRs que todavía estaban creciendo; en un caso, 12 minutos antes del commit que faltaba.|
+|**PR-05**|⚠️ **Este repo no soporta auto-merge**: es privado y el plan Free no lo incluye — la misma limitación que impide protegerle las ramas. En backend y frontend se usa `gh pr merge --auto --squash`; acá el merge es a mano, **con el CI ya en verde**.|
+|**PR-06**|**Después de mergear, verificar que el trabajo LLEGÓ** (`git log origin/dev`), no que el PR figura en verde. Un PR apilado mergeado contra su rama de abajo aparece como `MERGED` y el trabajo no llega. Pasó 3 veces entre el 20 y el 21-08.|
 
 Commits: `<tipo>(<scope>): <descripción en imperativo>`. Scopes típicos: `admin`, `bitacora`,
 `ui`, `router`, `ci`, `skills`. Un commit = un cambio lógico. Lo valida `commitlint`.
@@ -177,6 +180,7 @@ Por eso `/costear-bitacora` al cerrar una sesión (DOC-03) y el ADR en el mismo 
 
 |Fecha|Qué cambió|Fuente|
 |---|---|---|
+|2026-08-22|**PR-04/05/06**: el PR nace en draft, se mergea con `--auto`, y después se verifica que el trabajo llegó. Reemplazan por mecanismo lo que REV-08 pedía recordar. La skill `/costear-pr` ya crea los PRs en borrador.|Santiago|
 |2026-08-18|Secciones **5.bis** (datos de clientes en repos públicos, CLI-01 a CLI-04) y **6.bis** (protocolo de revisión, REV-01 a REV-08). Las dos salen de cosas que pasaron ese día: se publicó la estructura de costos de un betatester en un repo público, y ocho PRs se mergearon el mismo día que se abrieron.|Santiago|
 |2026-08-15|Creación, junto con el sistema de bitácora y las skills del equipo.|Santiago|
 
