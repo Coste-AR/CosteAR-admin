@@ -837,16 +837,30 @@ nadie a esperar a nadie.
 Ordenado por relación costo/beneficio. Las fases son independientes: se puede parar después de
 cualquiera.
 
-#### Fase 0 — Las casillas (15 minutos, cero código) 🎯
+#### Fase 0 — Las casillas (15 minutos, cero código) 🎯 · ✅ **EJECUTADA el 22-08**
 
-| Acción | Dónde | Qué cierra |
+| Acción | Estado | Qué cierra |
 |---|---|---|
-| `delete_branch_on_merge` → **true** | Settings de los 3 repos | El cementerio de ramas, **para siempre** |
-| `allow_auto_merge` → **true** | Settings de los 3 repos | Habilita la Fase 1 |
-| `require_last_push_approval` → **true** | Protección de `dev`, `staging`, `main` | El caso exacto del #119 |
-| `dismiss_stale_reviews` → **true** | Ídem | Aprobación vieja sobre código nuevo |
+| `delete_branch_on_merge` → **true** | ✅ los 3 repos | El cementerio de ramas, **para las futuras** |
+| `allow_auto_merge` → **true** | ✅ backend y frontend · ❌ **admin no puede** | Habilita la Fase 1 |
+| `require_last_push_approval` → **true** | ⛔ **descartada, ver abajo** | — |
+| `dismiss_stale_reviews` → **true** | ⛔ **descartada, ver abajo** | — |
 
-> **Es la fase de mayor impacto por minuto invertido de todo este documento.**
+> ⚠️ **Corrección al plan, encontrada al ejecutarlo.** Las dos últimas casillas **no hacen nada**
+> con la configuración actual: GitHub las evalúa sobre el requisito de aprobaciones, y
+> `required_approving_review_count` está en **0**. Sin aprobaciones exigidas no hay nada que
+> invalidar ni que re-aprobar. **Activarlas habría sido teatro de seguridad**: dos casillas en verde
+> que no protegen nada, que es peor que tenerlas apagadas y saberlo.
+>
+> Lo que iban a cubrir lo cubre la **Fase 1 con draft PRs**, que no depende de reviews.
+
+> ⚠️ **`CosteAR-admin` no soporta auto-merge**: es privado y el plan Free no lo incluye — la misma
+> limitación que ya impide protegerle las ramas (GIT-01 de su `CLAUDE.md`). Ahí la Fase 1 queda solo
+> con draft PRs, que sí funcionan en repos privados.
+
+**Pendiente de esta fase:** las **69 ramas ya mergeadas** siguen vivas. `delete_branch_on_merge`
+solo actúa sobre las futuras; las viejas necesitan una poda única, que es destructiva y requiere OK
+explícito.
 
 #### Fase 1 — La señal de «terminé» (media hora, convención + una casilla)
 
