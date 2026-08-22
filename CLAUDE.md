@@ -133,22 +133,10 @@ Commits: `<tipo>(<scope>): <descripción en imperativo>`. Scopes típicos: `admi
 
 ## 4. La bitácora — cómo se mantiene
 
-```
-bitacora/
-├── README.md      ← cómo funciona (y las 10 reglas de oro del equipo)
-├── INDICE.md      ← tabla maestra, una fila por entrada, más reciente arriba
-└── sesiones/
-    └── YYYY-MM-DD-<repo>-<slug>.md
-```
-
-|ID|Regla|
-|---|---|
-|**BIT-01**|**Una entrada por sesión de trabajo.** La escribe `/costear-bitacora`, no se hace a mano.|
-|**BIT-02**|**Se escribe para Alan y Lauti, que no son devs.** Nada de jerga sin explicar. Si hace falta un término técnico, se aclara entre paréntesis.|
-|**BIT-03**|**Toda entrada linkea a los PRs y ADRs reales.** Una entrada sin links no sirve como trazabilidad.|
-|**BIT-04**|**Nunca se edita una entrada vieja para "corregir la historia".** Si algo cambió, es una entrada nueva que referencia a la anterior.|
-|**BIT-05**|El `INDICE.md` se actualiza en el mismo commit que la entrada.|
-|**BIT-06**|**Nada de credenciales, tokens ni datos del cliente en la bitácora.** Aunque el repo sea privado.|
+**BIT-01 a BIT-06** — una entrada por sesión, escrita para no-devs, siempre linkeada a PRs/ADRs
+reales, nunca editada para "corregir la historia", el índice actualizado en el mismo commit, y
+nada de credenciales ni datos del cliente ahí. **Viven en `.claude/rules/bitacora.md`**: cargan
+solo al tocar `bitacora/`.
 
 ---
 
@@ -230,6 +218,7 @@ Por eso `/costear-bitacora` al cerrar una sesión (DOC-03) y el ADR en el mismo 
 
 |Fecha|Qué cambió|Fuente|
 |---|---|---|
+|2026-08-22|**Pieza 1 — BIT-01..06 se mudan a `.claude/rules/bitacora.md`**, scoped a `bitacora/**`. Antes cargaban en todas las sesiones; ahora solo al tocar la bitácora.|Santiago|
 |2026-08-22|**PR-04/05/06**: el PR nace en draft, se mergea con `--auto`, y después se verifica que el trabajo llegó. Reemplazan por mecanismo lo que REV-08 pedía recordar. La skill `/costear-pr` ya crea los PRs en borrador.|Santiago|
 |2026-08-22|**Sección 0.bis — la filosofía: diagnosticar, planificar, recién ahí implementar.** Se escribió después de que aplicarla encontrara, en una tarde, la causa de tres días de re-trabajo: cuatro casillas de configuración apagadas, no falta de disciplina. Incluye las tres trampas que el orden evita.|Santiago|
 |2026-08-18|Secciones **5.bis** (datos de clientes en repos públicos, CLI-01 a CLI-04) y **6.bis** (protocolo de revisión, REV-01 a REV-08). Las dos salen de cosas que pasaron ese día: se publicó la estructura de costos de un betatester en un repo público, y ocho PRs se mergearon el mismo día que se abrieron.|Santiago|
