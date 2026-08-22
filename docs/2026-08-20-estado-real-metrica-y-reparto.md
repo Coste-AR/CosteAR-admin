@@ -20,6 +20,7 @@
 8. [Qué hay que cerrar antes de repartir](#8-qué-hay-que-cerrar-antes-de-repartir)
 9. [Bitácora de ejecución](#9-bitácora-de-ejecución)
 10. [Diagnóstico: por qué aparecieron tantos problemas](#10-diagnóstico-por-qué-aparecieron-tantos-problemas)
+11. [La causa de fondo y el plan para cerrarla](#11-la-causa-de-fondo-y-el-plan-para-cerrarla)
 
 ---
 
@@ -769,6 +770,135 @@ el momento exacto no es un control: es una intención.**
   con doctrina verificada y cinco ADR escritos.
 - No dice que haya que frenar. Dice **dónde** se está perdiendo el tiempo: no en programar, sino en
   mover trabajo ya hecho y en pelear con un entorno que arrastra estado roto.
+
+---
+
+## 11. La causa de fondo y el plan para cerrarla
+
+> Continuación del §10, después de comparar contra **de-wall** (el repo de ASOME que se viene usando
+> como referencia de workflow) y de medir la configuración real de los tres repos de CosteAR.
+
+### 11.1 El hallazgo
+
+> **CosteAR tiene reglas escritas donde de-wall tiene controles ejecutables.**
+
+El equipo escribió mucho y bien: `CLAUDE.md` en los tres repos, REV-01 a REV-08, plantillas de PR,
+hooks de commit, un runbook de deploy, cinco ADR. **Y sin embargo el 17 % del trabajo de tres días
+fue re-trabajo.**
+
+El motivo es que **los controles que GitHub ofrece gratis están apagados**. Medido con la API:
+
+| Control | Estado en los 3 repos | Qué habría evitado |
+|---|---|---|
+| `delete_branch_on_merge` | ❌ `false` | Las **69 ramas mergeadas** que siguen vivas de 86 totales |
+| `allow_auto_merge` | ❌ `false` | Los 4 merges prematuros: no se puede decir «mergealo cuando pase CI» |
+| `required_approving_review_count` | ❌ `0` | Que un PR se mergee sin que nadie lo mire |
+| `require_last_push_approval` | ❌ `false` | **Exactamente el caso del #119**: aprobar y que después lleguen commits |
+| `dismiss_stale_reviews` | ❌ `false` | Que una aprobación vieja siga valiendo con código nuevo |
+| Draft PRs | ❌ sin usar | **GitHub impide mergear un draft.** Es la señal de «terminé» que no existe |
+| Checks obligatorios | ✅ activos | (funcionó: bloqueó el #126 con el test roto) |
+
+**La única columna en verde es la única que funcionó.** No es casualidad.
+
+Y la prueba definitiva de que escribir la regla no alcanza: **REV-08 se escribió el 18-08
+exactamente por este accidente, y volvió a pasar tres veces en los tres días siguientes.**
+
+### 11.2 Qué tiene de-wall que nosotros no — y al revés
+
+La comparación honesta va en los dos sentidos.
+
+| | de-wall | CosteAR |
+|---|---|---|
+| CI en cada PR | ✅ | ✅ |
+| **Smoke test post-deploy que falla el pipeline** | ✅ (12 intentos contra `/health`) | ❌ |
+| **Review que bloquea el merge** | ✅ (1 aprobación del Tech Lead) | ❌ (desactivado el 15-08) |
+| **Definition of Done escrita y vinculante** | ✅ | ❌ |
+| Deploy automático al pushear | ✅ | ✅ (Railway) |
+| **Migraciones aplicadas en el deploy** | ❌ (solo local) | ✅ |
+| **Políticas RLS automatizadas** | ❌ (no aplica) | ✅ (desde el 21-08) |
+| Guardia de cobertura de aislamiento | ❌ | ✅ |
+
+**CosteAR es más fuerte en infraestructura de datos y más débil en controles de flujo humano.**
+de-wall no tiene resuelto nada de migraciones: ahí no es referencia. Lo que sí hay que copiarle es
+el **smoke test que verifica el deploy solo** y el **DoD vinculante**.
+
+### 11.3 Por qué se apagó el control que más falta
+
+El 15-08 se decidió que el review **no bloquee** el merge: *«con 4 personas, exigir aprobación
+trababa el trabajo»*. La decisión fue razonable con la información de entonces.
+
+Hoy hay información nueva: **esa es la puerta por la que entró el 100 % del re-trabajo.** Pero
+revertirla sin más traería de vuelta el problema que resolvía. Por eso el plan de abajo **no propone
+exigir aprobaciones**: propone **draft PRs + auto-merge**, que atacan la misma causa sin poner a
+nadie a esperar a nadie.
+
+### 11.4 Plan de implementación
+
+Ordenado por relación costo/beneficio. Las fases son independientes: se puede parar después de
+cualquiera.
+
+#### Fase 0 — Las casillas (15 minutos, cero código) 🎯
+
+| Acción | Dónde | Qué cierra |
+|---|---|---|
+| `delete_branch_on_merge` → **true** | Settings de los 3 repos | El cementerio de ramas, **para siempre** |
+| `allow_auto_merge` → **true** | Settings de los 3 repos | Habilita la Fase 1 |
+| `require_last_push_approval` → **true** | Protección de `dev`, `staging`, `main` | El caso exacto del #119 |
+| `dismiss_stale_reviews` → **true** | Ídem | Aprobación vieja sobre código nuevo |
+
+> **Es la fase de mayor impacto por minuto invertido de todo este documento.**
+
+#### Fase 1 — La señal de «terminé» (media hora, convención + una casilla)
+
+1. **Todo PR nace como *draft*.** GitHub **impide mergear un draft**: la ventana de merge prematuro
+   desaparece por construcción, no por acordarse.
+2. Cuando el trabajo está listo → *Ready for review*.
+3. Quien quiere mergear usa **auto-merge**: lo marca y GitHub lo mergea **solo cuando el CI pasa**.
+   Nadie espera a nadie y nadie mergea a mano en el medio.
+
+Esto reemplaza a REV-08 por un mecanismo. La regla puede quedar escrita, pero deja de ser lo único
+que separa el trabajo de la pérdida.
+
+#### Fase 2 — Verificar el deploy sin mirarlo (1-2 horas)
+
+Copiar de de-wall el **smoke test post-deploy**: un workflow que, después de mergear a `staging`,
+consulta `/health` y **compara el SHA que devuelve contra el commit que se mergeó**.
+
+Ahora es posible porque `/health` ya expone la versión (21-08). Cierra dos cosas de una:
+- La verificación manual del runbook («anotá el SHA»), que nunca se hizo.
+- La pregunta *«¿esto ya está en producción?»*, que en la auditoría quedó sin respuesta tres veces.
+
+#### Fase 3 — Cerrar la deriva del schema (medio día)
+
+Las **9 sentencias destructivas** que arrastra `prisma migrate diff` obligan a escribir cada
+migración a mano. Ya se normalizó —hay dos migraciones con ese comentario— y **una anomalía
+normalizada deja de verse**. Conecta con el issue #72.
+
+Hasta que se cierre, el chequeo del Paso 0 del runbook es obligatorio antes de cada deploy.
+
+#### Fase 4 — Bajar el ruido (medio día)
+
+- El test que **falla por timeout bajo carga**: subirle el límite o aislarlo.
+- Los **20 warnings de lint** preexistentes: arreglarlos o silenciarlos con motivo escrito.
+- Las **69 ramas** ya mergeadas: se van solas con la Fase 0; las viejas, una poda única.
+
+Nada de esto rompe hoy. Todo esto enseña a ignorar el semáforo, y **un semáforo que se ignora es
+peor que no tenerlo**.
+
+#### Fase 5 — Definition of Done (1 hora, decisión de equipo)
+
+de-wall tiene una DoD vinculante por historia. CosteAR tiene los criterios repartidos entre
+`CLAUDE.md`, la plantilla de PR y el runbook. **Juntarlos en una lista corta** —y que sea la misma
+para los tres repos— es lo que permite decir «esto está terminado» sin que dependa de quién lo diga.
+
+### 11.5 Lo que este plan NO propone, y por qué
+
+| Alternativa | Por qué no |
+|---|---|
+| Exigir aprobación de review para mergear | Es lo que de-wall hace, pero se desactivó acá el 15-08 por una razón real: con 4 personas, traba. Draft + auto-merge atacan la misma causa **sin** poner a nadie a esperar. |
+| Prohibir los PRs apilados | El apilamiento **no era la causa** (el cuarto incidente fue un PR simple). Prohibirlos sería tratar un síntoma y perder una herramienta útil. |
+| Escribir otra regla en `CLAUDE.md` | Es lo que ya se hizo con REV-08 el 18-08. Volvió a pasar tres veces. **Una regla que hay que recordar en el momento exacto no es un control.** |
+| Migrar el deploy a GitHub Actions como de-wall | Railway ya deploya y ahora corre migraciones + RLS. Cambiar de plataforma es un proyecto, no un arreglo. |
 
 ---
 
