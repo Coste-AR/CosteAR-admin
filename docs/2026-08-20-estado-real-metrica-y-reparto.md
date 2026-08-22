@@ -858,9 +858,26 @@ cualquiera.
 > limitación que ya impide protegerle las ramas (GIT-01 de su `CLAUDE.md`). Ahí la Fase 1 queda solo
 > con draft PRs, que sí funcionan en repos privados.
 
-**Pendiente de esta fase:** las **69 ramas ya mergeadas** siguen vivas. `delete_branch_on_merge`
-solo actúa sobre las futuras; las viejas necesitan una poda única, que es destructiva y requiere OK
-explícito.
+**Poda ejecutada el 22-08**, con respaldo versionado antes de borrar
+(`docs/2026-08-22-ramas-podadas-respaldo.md`, con el SHA de cada una):
+
+| Repo | Antes | Después |
+|---|---|---|
+| backend | 86 | **8** |
+| frontend | 43 | **6** |
+| admin | 24 | **5** |
+
+**137 ramas borradas.** Lo que quedó vivo es trabajo real en curso, las tres protegidas y los PRs
+abiertos.
+
+> 🔍 **Hallazgo de la poda:** `git branch --merged dev` **no detecta las ramas mergeadas con
+> squash**, porque el squash genera un commit distinto. Diez ramas quedaron dando vueltas por eso
+> —incluidas las tres de la cadena apilada— y hubo que hacer una segunda pasada verificando PR por
+> PR que figurara `MERGED`.
+>
+> A futuro no vuelve a pasar: `delete_branch_on_merge` sí las borra, porque GitHub sabe que el PR se
+> mergeó aunque git no lo vea. **Es otro caso de lo mismo: el control de la plataforma acierta donde
+> el criterio manual falla.**
 
 #### Fase 1 — La señal de «terminé» (media hora, convención + una casilla)
 

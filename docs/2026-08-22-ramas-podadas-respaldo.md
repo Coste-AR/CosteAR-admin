@@ -152,3 +152,21 @@
 | `merge/dev-a-staging-2` | `943998d` |
 **18 ramas.**
 
+
+## Segunda pasada — ramas con PR mergeado (squash) que `--merged` no detecta
+
+El squash merge genera un commit distinto, así que git no las ve como mergeadas aunque su
+trabajo esté en `dev`. Se verificó una por una que su PR figure MERGED.
+
+| repo | rama | PR | SHA |
+|---|---|---|---|
+| CosteAR-backend | `feat/amortizacion-y-desperdicio` | #70 | `fceb571` |
+| CosteAR-backend | `feat/parametro-costeo` | #69 | `e22db0b` |
+| CosteAR-backend | `feat/seed-tenant-avicola` | #77 | `6ccabc5` |
+| CosteAR-backend | `feat/setup-previo-procesos` | #30 | `7a798b4` |
+| CosteAR-backend | `feat/tenant-pico-de-oro` | #71 | `85c0b81` |
+| CosteAR-backend | `fix/costo-unitario-produccion-en-proceso` | #104 | `0ceb395` |
+| CosteAR-backend | `fix/cpv-unitario-por-unidades-vendidas` | #105 | `8a034b5` |
+| CosteAR-backend | `fix/estado-de-costos-variacion-presupuesto` | #106 | `fec9b97` |
+| CosteAR-admin | `docs/bitacora-merge-apilado` | #27 | `d7cd979` |
+| CosteAR-admin | `docs/bitacora-trabajos-de-terceros` | #28 | `34cb1b2` |
