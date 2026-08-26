@@ -20,6 +20,17 @@
 
 ---
 
+## 0.bis La filosofía: diagnosticar, planificar, recién ahí implementar
+
+**La forma de trabajar, no una recomendación.** Diagnosticar con números → planificar con
+alternativas descartadas → recién ahí implementar, y verificar donde el trabajo va a vivir, no
+donde uno está parado. Se movió el 22-08-2026 para no cargarla en cada sesión sin importar la
+tarea. La versión completa —con el caso que la probó y el detalle de cada trampa— vive en
+[`docs/2026-08-22-filosofia-diagnosticar-planificar-implementar.md`](https://github.com/Coste-AR/CosteAR-admin/blob/dev/docs/2026-08-22-filosofia-diagnosticar-planificar-implementar.md)
+de este mismo repo (fuente canónica: el Second Brain de Santiago, fuera de los repos de código).
+
+---
+
 ## 1. Qué es este repo — tiene DOS funciones
 
 **(a) El panel de administración interno** de CosteAR (React + Vite, mismo stack que el frontend).
@@ -72,30 +83,44 @@ feature-branch → dev → staging → main
 |**GIT-02**|Las ramas salen de **`dev`**.|
 |**GIT-03**|Nombre: `<tipo>/<slug-corto>` — solo `a-z0-9-`, máximo 40 caracteres.|
 |**GIT-04**|`main` solo desde `staging`; `staging` solo desde `dev`.|
+|**PR-04**|**Todo PR nace en DRAFT.** GitHub **impide mergear un borrador**: mientras el trabajo crece, nadie lo mergea por error. Se marca `gh pr ready` cuando está listo de verdad — y se dice **«terminé de pushear»**. Entre el 20 y el 22-08 se perdieron 4 PRs de trabajo por mergear PRs que todavía estaban creciendo; en un caso, 12 minutos antes del commit que faltaba.|
+|**PR-05**|⚠️ **Este repo no soporta auto-merge**: es privado y el plan Free no lo incluye — la misma limitación que impide protegerle las ramas. En backend y frontend se usa `gh pr merge --auto --squash`; acá el merge es a mano, **con el CI ya en verde**.|
+|**PR-06**|**Después de mergear, verificar que el trabajo LLEGÓ** (`git log origin/dev`), no que el PR figura en verde. Un PR apilado mergeado contra su rama de abajo aparece como `MERGED` y el trabajo no llega. Pasó 3 veces entre el 20 y el 21-08.|
 
 Commits: `<tipo>(<scope>): <descripción en imperativo>`. Scopes típicos: `admin`, `bitacora`,
 `ui`, `router`, `ci`, `skills`. Un commit = un cambio lógico. Lo valida `commitlint`.
 
 ---
 
-## 4. La bitácora — cómo se mantiene
+## El briefing automático y `ESTADO.md`
 
-```
-bitacora/
-├── README.md      ← cómo funciona (y las 10 reglas de oro del equipo)
-├── INDICE.md      ← tabla maestra, una fila por entrada, más reciente arriba
-└── sesiones/
-    └── YYYY-MM-DD-<repo>-<slug>.md
-```
+Al abrir cualquier sesión de Claude en este repo, un hook (`SessionStart`) corre
+`.claude/hooks/briefing.mjs` e **inyecta el estado real del proyecto** antes de que nadie escriba
+nada: la rama, si `origin/dev` avanzó, los PRs abiertos, los issues asignados y el contenido de
+`ESTADO.md`.
 
 |ID|Regla|
 |---|---|
-|**BIT-01**|**Una entrada por sesión de trabajo.** La escribe `/costear-bitacora`, no se hace a mano.|
-|**BIT-02**|**Se escribe para Alan y Lauti, que no son devs.** Nada de jerga sin explicar. Si hace falta un término técnico, se aclara entre paréntesis.|
-|**BIT-03**|**Toda entrada linkea a los PRs y ADRs reales.** Una entrada sin links no sirve como trazabilidad.|
-|**BIT-04**|**Nunca se edita una entrada vieja para "corregir la historia".** Si algo cambió, es una entrada nueva que referencia a la anterior.|
-|**BIT-05**|El `INDICE.md` se actualiza en el mismo commit que la entrada.|
-|**BIT-06**|**Nada de credenciales, tokens ni datos del cliente en la bitácora.** Aunque el repo sea privado.|
+|**EST-01**|**`ESTADO.md` es el mensaje del orquestador**: qué se está haciendo, qué **no** tocar y por qué. Se inyecta entero en cada sesión, así que vale más **corto que completo** — máximo 20 líneas. **Cada repo tiene el suyo**: lo que no hay que tocar acá no es lo mismo que en el backend.|
+|**EST-02**|**Actualizarlo al abrir y al cerrar un bloque de trabajo.** Un estado viejo es peor que ninguno: enseña a ignorarlo, igual que un semáforo que siempre está en rojo.|
+|**EST-03**|**El briefing nunca puede romper una sesión.** Si `git` o `gh` fallan, imprime lo que pudo y sigue. Se prueba con `node .claude/hooks/briefing.mjs`.|
+|**EST-04**|**Cada línea del briefing ocupa contexto de la conversación real.** Antes de agregarle algo: ¿cambia lo que la persona va a hacer? Si no, no va.|
+|**EST-05**|**Antes de commitear un cambio en `.claude/settings.json`, correr `node .claude/hooks/briefing.mjs --check-settings`.** Un `settings.json` inválido **se descarta entero**, no solo la parte mal escrita — y el error recién aparece al abrir una sesión nueva.|
+
+> **Por qué existe.** La trazabilidad estaba escrita en documentos, y un documento depende de que
+> alguien se acuerde de leerlo — el mismo modo de fallar que el diagnóstico del 22-08 encontró en el
+> flujo de PRs. Además envejece. Esto no reemplaza la documentación: la vuelve innecesaria de buscar.
+>
+> El script es **el mismo en los tres repos**. Si se cambia acá, se cambia en los tres.
+
+---
+
+## 4. La bitácora — cómo se mantiene
+
+**BIT-01 a BIT-06** — una entrada por sesión, escrita para no-devs, siempre linkeada a PRs/ADRs
+reales, nunca editada para "corregir la historia", el índice actualizado en el mismo commit, y
+nada de credenciales ni datos del cliente ahí. **Viven en `.claude/rules/bitacora.md`**: cargan
+solo al tocar `bitacora/`.
 
 ---
 
@@ -177,6 +202,10 @@ Por eso `/costear-bitacora` al cerrar una sesión (DOC-03) y el ADR en el mismo 
 
 |Fecha|Qué cambió|Fuente|
 |---|---|---|
+|2026-08-22|**0.bis sale de acá.** La filosofía (diagnosticar/planificar/implementar) cargaba en TODAS las sesiones sin importar la tarea. El resumen operativo queda inline; la versión completa vive en `CosteAR-admin/docs/2026-08-22-filosofia-diagnosticar-planificar-implementar.md` (espejo del Second Brain de Santiago, que es la fuente canónica). Se evaluó y descartó ponerla en `costear-knowledge-base`: ese repo alimenta el RAG del clasificador y mete cualquier `.md` al índice — se habría mezclado con la doctrina de costeo.|Santiago|
+|2026-08-22|**Pieza 1 — BIT-01..06 se mudan a `.claude/rules/bitacora.md`**, scoped a `bitacora/**`. Antes cargaban en todas las sesiones; ahora solo al tocar la bitácora.|Santiago|
+|2026-08-22|**PR-04/05/06**: el PR nace en draft, se mergea con `--auto`, y después se verifica que el trabajo llegó. Reemplazan por mecanismo lo que REV-08 pedía recordar. La skill `/costear-pr` ya crea los PRs en borrador.|Santiago|
+|2026-08-22|**Sección 0.bis — la filosofía: diagnosticar, planificar, recién ahí implementar.** Se escribió después de que aplicarla encontrara, en una tarde, la causa de tres días de re-trabajo: cuatro casillas de configuración apagadas, no falta de disciplina. Incluye las tres trampas que el orden evita.|Santiago|
 |2026-08-18|Secciones **5.bis** (datos de clientes en repos públicos, CLI-01 a CLI-04) y **6.bis** (protocolo de revisión, REV-01 a REV-08). Las dos salen de cosas que pasaron ese día: se publicó la estructura de costos de un betatester en un repo público, y ocho PRs se mergearon el mismo día que se abrieron.|Santiago|
 |2026-08-15|Creación, junto con el sistema de bitácora y las skills del equipo.|Santiago|
 
