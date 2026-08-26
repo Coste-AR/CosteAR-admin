@@ -144,6 +144,7 @@ solo al tocar `bitacora/`.
 |**DOC-01**|Toda decisión técnica no obvia va a un ADR: `docs/adr/NNNN-slug.md`, con `/costear-adr`.|
 |**DOC-02**|`DECISIONES.md` es **registro histórico** de Trazabilidad Total v1. No agregar nada nuevo ahí.|
 |**DOC-03**|Las decisiones **de proceso del equipo** (cómo trabajamos) van a `DEFINITION-OF-DONE.md` o a un ADR de este repo, y se acuerdan en retro.|
+|**DOC-04**|**`DEFINITION-OF-DONE.md` es la fuente única del DoD** (issue #39). `CosteAR-backend` y `CosteAR-frontend` NO tienen copia: su `CLAUDE.md` trae un resumen operativo (Nivel 1) que enlaza acá, y el briefing de los tres repos imprime ese mismo resumen + link en cada sesión. Si el DoD cambia, se edita **solo acá** — las otras dos copias son un resumen, no una copia completa, así que no hay nada que sincronizar a mano.|
 
 ---
 
