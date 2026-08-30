@@ -1,4 +1,18 @@
-# CosteAR — Frontend
+# CosteAR — Panel de administración
+
+**El back-office nuestro: las pantallas que usamos nosotros, no el cliente.**
+
+Son cinco: gestión de usuarios, la bóveda de conocimiento, el chat RAG contra la
+bóveda, los sectores industriales y las alertas del sistema. Más la administración
+de términos y condiciones.
+
+> **Si buscabas la app del cliente, no es acá:** es
+> [`CosteAR-frontend`](https://github.com/Coste-AR/CosteAR-frontend).
+>
+> Este repo nació el 23-07-2026 como una copia podada de ese, y hasta hoy el título
+> de este README todavía decía "CosteAR — Frontend". Por eso, dentro del equipo,
+> nadie tenía claro qué era. La historia completa está en
+> [`CosteAR-os`](https://github.com/Coste-AR/CosteAR-os#qué-es-costear-admin-ya-que-nadie-se-acordaba).
 
 SPA para profesionales de costos. Interfaz de precisión, minimalista, con el
 granate como firma de marca (según la guía "Identidad Visual v1.0").
