@@ -5,6 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
+    "briefing": "node .claude/hooks/briefing.mjs",
     "build": "tsc -b && vite build",
     "preview": "vite preview",
     "lint": "node -e \"console.log('Este repo todavia no tiene ESLint configurado. Ver CLAUDE.md, regla CMD-02.')\"",
