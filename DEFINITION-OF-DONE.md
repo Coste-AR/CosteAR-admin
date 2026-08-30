@@ -19,8 +19,12 @@ son los criterios de aceptación del issue.
 - [ ] El flujo feliz anda sin errores reproducibles
 - [ ] Los casos de borde del issue están cubiertos, **o diferidos con issue creado y motivo escrito**
 - [ ] No rompe nada de lo que ya funcionaba
-- [ ] **Si toca UI o un flujo: se abrió en el navegador y se probó de punta a punta.**
-      Los tests unitarios no alcanzan — ya hubo un caso con 98 tests en verde y el flujo roto
+- [ ] **Si toca UI o un flujo: hay un test de Playwright que lo recorre de punta a punta.**
+      Los tests unitarios no alcanzan — ya hubo un caso con 98 tests en verde y el flujo roto.
+      Lo que reemplaza a la pasada manual por el navegador es la suite E2E: `npm run test:e2e`
+      en verde, con captura adjunta de cada pantalla tocada. Si el flujo no se puede cubrir
+      todavía (falta el fixture de sesión, por ejemplo), se difiere **con issue creado**, igual
+      que cualquier otro caso de borde
 
 ### Código
 
@@ -75,7 +79,8 @@ El nivel que importa ahora que hay un cliente real.
 - [ ] Los números verificados contra el cálculo manual del costista. **Si un número no cierra, no
       se entrega** — se avisa antes de que lo vea el cliente
 - [ ] Sin errores nuevos en el monitoreo (Sentry) después del deploy
-- [ ] Probado en el navegador que usa el cliente, no solo en el nuestro
+- [ ] La suite E2E cubre los cuatro viewports configurados (Chrome y Safari de escritorio,
+      Pixel 5 e iPhone 12) y está en verde en la rama que se promueve
 
 ### Seguridad
 
@@ -129,3 +134,4 @@ una entrega.
 | Fecha | Qué cambió | Motivo | Acordado por |
 | --- | --- | --- | --- |
 | 2026-08-15 | Versión inicial | Primer cliente real. Adaptado de la Definition of Done de ASOME (DeWall) a un equipo de 3 sin sprints formales | Santiago |
+| 2026-08-30 | Sale la verificación visual manual; entra la suite E2E automatizada | El objetivo pasa a ser volumen: desarrollo y documentación en masa con agentes de Codex. Una pasada manual por el navegador en cada issue no escala a ese ritmo, y además era el único criterio de la DoD que dependía de que una persona específica estuviera disponible. Lo reemplaza Playwright en los tres repos, con captura de pantalla como evidencia adjunta para que la revise un agente | Santiago |
