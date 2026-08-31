@@ -84,7 +84,7 @@ feature-branch → dev → staging → main
 |**GIT-03**|Nombre: `<tipo>/<slug-corto>` — solo `a-z0-9-`, máximo 40 caracteres.|
 |**GIT-04**|`main` solo desde `staging`; `staging` solo desde `dev`.|
 |**PR-04**|**Todo PR nace en DRAFT.** GitHub **impide mergear un borrador**: mientras el trabajo crece, nadie lo mergea por error. Se marca `gh pr ready` cuando está listo de verdad — y se dice **«terminé de pushear»**. Entre el 20 y el 22-08 se perdieron 4 PRs de trabajo por mergear PRs que todavía estaban creciendo; en un caso, 12 minutos antes del commit que faltaba.|
-|**PR-05**|⚠️ **Este repo no soporta auto-merge**: es privado y el plan Free no lo incluye — la misma limitación que impide protegerle las ramas. En backend y frontend se usa `gh pr merge --auto --squash`; acá el merge es a mano, **con el CI ya en verde**.|
+|**PR-05**|**El agente no mergea — tampoco con `gh pr merge --auto`.** Desde el 30-08-2026 mergea `.github/workflows/auto-merge.yml` en los tres repos: checks en verde **y** etiqueta `auto-merge`, que pone Santiago. ⚠️ **Acá el auto-merge nativo de GitHub no existe**: el repo es privado y el plan Free no lo incluye — la misma limitación que impide protegerle las ramas. Por eso el workflow verifica los checks él mismo, y acá **es lo único que separa un merge bueno de uno en rojo**. Canónico: `CosteAR-os/ORQUESTACION.md`.|
 |**PR-06**|**Después de mergear, verificar que el trabajo LLEGÓ** (`git log origin/dev`), no que el PR figura en verde. Un PR apilado mergeado contra su rama de abajo aparece como `MERGED` y el trabajo no llega. Pasó 3 veces entre el 20 y el 21-08.|
 
 Commits: `<tipo>(<scope>): <descripción en imperativo>`. Scopes típicos: `admin`, `bitacora`,
