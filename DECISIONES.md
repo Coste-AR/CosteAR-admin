@@ -1,4 +1,24 @@
-# Decisiones — Trazabilidad Total v1 (frontend)
+# Decisiones — Trazabilidad Total v1 (heredado del frontend)
+
+> 📌 **De dónde salió este archivo, porque confunde** *(nota del 31-08-2026)*
+>
+> Es **idéntico** al `DECISIONES.md` de `CosteAR-frontend`, y no por error: este repo **nació como
+> una copia podada de aquél** el 23-07-2026, cuando se separaron las pantallas de administración
+> de la app del cliente. El archivo vino en la copia.
+>
+> **Ninguna de las decisiones de acá se tomó pensando en el panel de administración.** Todas son
+> de la implementación de Trazabilidad Total v1 en el frontend del producto. Se conservan porque
+> son la historia real del código del que salió este repo, no porque apliquen.
+>
+> **No se parten ni se deduplican**, y la razón es que los dos archivos están cerrados: nadie
+> escribe en ellos desde el 15-08-2026 (regla `DOC-02`). Partir historia congelada sería trabajo
+> sin beneficio, con el costo de romper la trazabilidad compartida.
+>
+> **Lo que sí importa saber:** si estás buscando por qué algo es como es **en el panel de
+> administración**, esto no es la fuente. Mirá `docs/adr/` y la bitácora.
+>
+> La historia completa de la separación está en
+> [`CosteAR-os`](https://github.com/Coste-AR/CosteAR-os#qué-es-costear-admin-ya-que-nadie-se-acordaba).
 
 > ⚠️ **Registro histórico — cerrado.**
 >
