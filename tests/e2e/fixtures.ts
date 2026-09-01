@@ -10,8 +10,36 @@ import { test as base, expect, type Page } from '@playwright/test';
  * rompe el test, que es la unica forma de que "la pantalla anda" signifique algo.
  */
 type ErroresDeConsola = { mensajes: string[] };
+type PeticionesSinMockear = { peticiones: Set<string> };
 
-export const test = base.extend<{ consola: ErroresDeConsola }>({
+const PERFIL_ADMIN = {
+  id: 'e2e-admin',
+  email: 'admin-e2e@costear.test',
+  name: 'Admin E2E',
+  role: 'ADMIN',
+};
+
+const ESTADISTICAS_ADMIN = {
+  saas: { totalUsers: 12, activeUsersToday: 3, totalCompanies: 4 },
+  vault: {
+    totalChunks: 42,
+    totalSignals: 7,
+    pendingSignals: 0,
+    ragMisses: 1,
+    userCorrections: 2,
+    signalsBySource: {},
+  },
+};
+
+export const test = base.extend<{
+  consola: ErroresDeConsola;
+  peticionesSinMockear: PeticionesSinMockear;
+  sesionAdmin: void;
+}>({
+  peticionesSinMockear: async ({}, use) => {
+    await use({ peticiones: new Set() });
+  },
+
   /**
    * El bootstrap de sesion pega a /auth/refresh en CADA carga de pagina. Sin
    * backend levantado eso da 500 y ensucia la consola con un error que no es
@@ -21,7 +49,22 @@ export const test = base.extend<{ consola: ErroresDeConsola }>({
    * publica y no depende de que alguien tenga Docker corriendo. Es ademas lo
    * que hace la suite determinista en CI, donde no hay API.
    */
-  page: async ({ page }, use) => {
+  page: async ({ page, peticionesSinMockear }, use) => {
+    // Este es el último recurso, no un mock por defecto: cualquier endpoint
+    // nuevo que una pantalla empiece a pedir tiene que quedar declarado en el
+    // fixture. Devolver 501 mantiene la navegación viva para que el teardown
+    // pueda informar TODAS las omisiones en vez de ocultar la primera.
+    await page.route('**/api/v1/**', async (route) => {
+      const request = route.request();
+      const { pathname } = new URL(request.url());
+      peticionesSinMockear.peticiones.add(`${request.method()} ${pathname}`);
+      await route.fulfill({
+        status: 501,
+        contentType: 'application/json',
+        body: JSON.stringify({ error: 'API sin mock E2E' }),
+      });
+    });
+
     await page.route('**/api/*/auth/refresh', (route) =>
       route.fulfill({
         status: 401,
@@ -30,6 +73,39 @@ export const test = base.extend<{ consola: ErroresDeConsola }>({
       }),
     );
     await use(page);
+
+    expect(
+      [...peticionesSinMockear.peticiones],
+      'Peticiones de API sin mockear (método y pathname)',
+    ).toEqual([]);
+  },
+
+  /**
+   * Sesión reutilizable para rutas detrás de requireAdmin. Reemplaza el
+   * refresh público por un token y responde el perfil que el bootstrap usa
+   * para completar el store de auth, además de las lecturas de /admin.
+   */
+  sesionAdmin: async ({ page }, use) => {
+    await page.route('**/api/v1/auth/refresh', (route) =>
+      route.fulfill({
+        contentType: 'application/json',
+        body: JSON.stringify({ data: { accessToken: 'e2e-admin-token' } }),
+      }),
+    );
+    await page.route('**/api/v1/user/profile', (route) =>
+      route.fulfill({
+        contentType: 'application/json',
+        body: JSON.stringify({ data: PERFIL_ADMIN }),
+      }),
+    );
+    await page.route('**/api/v1/admin/stats', (route) =>
+      route.fulfill({
+        contentType: 'application/json',
+        body: JSON.stringify({ data: ESTADISTICAS_ADMIN }),
+      }),
+    );
+
+    await use();
   },
 
   consola: async ({ page }, use) => {
