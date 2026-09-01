@@ -10,7 +10,7 @@ import { test as base, expect, type Page } from '@playwright/test';
  * rompe el test, que es la unica forma de que "la pantalla anda" signifique algo.
  */
 type ErroresDeConsola = { mensajes: string[] };
-type PeticionesSinMockear = { peticiones: Set<string> };
+type PeticionesSinMockear = { peticiones: string[] };
 
 const PERFIL_ADMIN = {
   id: 'e2e-admin',
@@ -37,7 +37,7 @@ export const test = base.extend<{
   sesionAdmin: void;
 }>({
   peticionesSinMockear: async ({}, use) => {
-    await use({ peticiones: new Set() });
+    await use({ peticiones: [] });
   },
 
   /**
@@ -57,7 +57,7 @@ export const test = base.extend<{
     await page.route('**/api/v1/**', async (route) => {
       const request = route.request();
       const { pathname } = new URL(request.url());
-      peticionesSinMockear.peticiones.add(`${request.method()} ${pathname}`);
+      peticionesSinMockear.peticiones.push(`${request.method()} ${pathname}`);
       await route.fulfill({
         status: 501,
         contentType: 'application/json',
@@ -74,10 +74,14 @@ export const test = base.extend<{
     );
     await use(page);
 
-    expect(
-      [...peticionesSinMockear.peticiones],
-      'Peticiones de API sin mockear (método y pathname)',
-    ).toEqual([]);
+    if (peticionesSinMockear.peticiones.length > 0) {
+      throw new Error(
+        [
+          'requests E2E sin fixture:',
+          ...peticionesSinMockear.peticiones.map((request) => `- ${request}`),
+        ].join('\n'),
+      );
+    }
   },
 
   /**
