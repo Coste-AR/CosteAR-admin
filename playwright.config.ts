@@ -1,76 +1,43 @@
 import { defineConfig, devices } from '@playwright/test';
 
 /**
- * Read environment variables from file.
- * https://github.com/motdotla/dotenv
- */
-// import dotenv from 'dotenv';
-// import path from 'path';
-// dotenv.config({ path: path.resolve(__dirname, '.env') });
-
-/**
- * See https://playwright.dev/docs/test-configuration.
+ * Playwright de admin.
+ *
+ * Reescrito el 30-08-2026 sobre el scaffold original. Dos cosas cambiaron:
+ * los viewports mobile salieron del bloque comentado —"layouts rotos en
+ * mobile" era un modo de falla nombrado por el equipo y no habia un solo test
+ * que lo pudiera ver— y la captura pasa a ser siempre, porque la Definition
+ * of Done ya no pide que una persona abra el navegador y esta suite es lo que
+ * la reemplaza. La evidencia tiene que quedar mirable por un agente.
  */
 export default defineConfig({
-  testDir: './tests',
-  /* Run tests in files in parallel */
+  testDir: './tests/e2e',
   fullyParallel: true,
-  /* Fail the build on CI if you accidentally left test.only in the source code. */
   forbidOnly: !!process.env.CI,
-  /* Retry on CI only */
   retries: process.env.CI ? 2 : 0,
-  /* Opt out of parallel tests on CI. */
   workers: process.env.CI ? 1 : undefined,
-  /* Reporter to use. See https://playwright.dev/docs/test-reporters */
-  reporter: 'html',
-  /* Shared settings for all the projects below. See https://playwright.dev/docs/api/class-testoptions. */
-  use: {
-    /* Base URL to use in actions like `await page.goto('')`. */
-    baseURL: 'http://localhost:5176',
+  reporter: [['list'], ['html', { open: 'never' }]],
 
-    /* Collect trace when retrying the failed test. See https://playwright.dev/docs/trace-viewer */
+  /* 15 s, no los 5 s por defecto. `main.tsx` fuerza un splash minimo de 5 s
+   * (MIN_SPLASH_MS) mas 300 ms de fade en CADA carga de pagina, y mientras
+   * dura, `#root` no tiene caja de layout: Playwright lo ve oculto. Con el
+   * timeout por defecto toda la suite fallaba justo en el limite. */
+  expect: { timeout: 15_000 },
+
+  use: {
+    baseURL: process.env.E2E_BASE_URL ?? 'http://localhost:5176',
+    screenshot: 'on',
     trace: 'on-first-retry',
+    video: 'retain-on-failure',
   },
 
-  /* Configure projects for major browsers */
   projects: [
-    {
-      name: 'chromium',
-      use: { ...devices['Desktop Chrome'] },
-    },
-
-    {
-      name: 'firefox',
-      use: { ...devices['Desktop Firefox'] },
-    },
-
-    {
-      name: 'webkit',
-      use: { ...devices['Desktop Safari'] },
-    },
-
-    /* Test against mobile viewports. */
-    // {
-    //   name: 'Mobile Chrome',
-    //   use: { ...devices['Pixel 5'] },
-    // },
-    // {
-    //   name: 'Mobile Safari',
-    //   use: { ...devices['iPhone 12'] },
-    // },
-
-    /* Test against branded browsers. */
-    // {
-    //   name: 'Microsoft Edge',
-    //   use: { ...devices['Desktop Edge'], channel: 'msedge' },
-    // },
-    // {
-    //   name: 'Google Chrome',
-    //   use: { ...devices['Desktop Chrome'], channel: 'chrome' },
-    // },
+    { name: 'chromium', use: { ...devices['Desktop Chrome'] } },
+    { name: 'webkit', use: { ...devices['Desktop Safari'] } },
+    { name: 'Mobile Chrome', use: { ...devices['Pixel 5'] } },
+    { name: 'Mobile Safari', use: { ...devices['iPhone 12'] } },
   ],
 
-  /* Levanta el server de Vite antes de correr los tests (local y en CI). */
   webServer: {
     command: 'npm run dev',
     url: 'http://localhost:5176',

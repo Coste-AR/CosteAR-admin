@@ -84,7 +84,7 @@ feature-branch → dev → staging → main
 |**GIT-03**|Nombre: `<tipo>/<slug-corto>` — solo `a-z0-9-`, máximo 40 caracteres.|
 |**GIT-04**|`main` solo desde `staging`; `staging` solo desde `dev`.|
 |**PR-04**|**Todo PR nace en DRAFT.** GitHub **impide mergear un borrador**: mientras el trabajo crece, nadie lo mergea por error. Se marca `gh pr ready` cuando está listo de verdad — y se dice **«terminé de pushear»**. Entre el 20 y el 22-08 se perdieron 4 PRs de trabajo por mergear PRs que todavía estaban creciendo; en un caso, 12 minutos antes del commit que faltaba.|
-|**PR-05**|⚠️ **Este repo no soporta auto-merge**: es privado y el plan Free no lo incluye — la misma limitación que impide protegerle las ramas. En backend y frontend se usa `gh pr merge --auto --squash`; acá el merge es a mano, **con el CI ya en verde**.|
+|**PR-05**|**El agente no mergea — tampoco con `gh pr merge --auto`.** Desde el 30-08-2026 mergea `.github/workflows/auto-merge.yml` en los tres repos: checks en verde **y** etiqueta `auto-merge`, que pone Santiago. ⚠️ **Acá el auto-merge nativo de GitHub no existe**: el repo es privado y el plan Free no lo incluye — la misma limitación que impide protegerle las ramas. Por eso el workflow verifica los checks él mismo, y acá **es lo único que separa un merge bueno de uno en rojo**. Canónico: `CosteAR-os/ORQUESTACION.md`.|
 |**PR-06**|**Después de mergear, verificar que el trabajo LLEGÓ** (`git log origin/dev`), no que el PR figura en verde. Un PR apilado mergeado contra su rama de abajo aparece como `MERGED` y el trabajo no llega. Pasó 3 veces entre el 20 y el 21-08.|
 
 Commits: `<tipo>(<scope>): <descripción en imperativo>`. Scopes típicos: `admin`, `bitacora`,
@@ -144,6 +144,7 @@ solo al tocar `bitacora/`.
 |**DOC-01**|Toda decisión técnica no obvia va a un ADR: `docs/adr/NNNN-slug.md`, con `/costear-adr`.|
 |**DOC-02**|`DECISIONES.md` es **registro histórico** de Trazabilidad Total v1. No agregar nada nuevo ahí.|
 |**DOC-03**|Las decisiones **de proceso del equipo** (cómo trabajamos) van a `DEFINITION-OF-DONE.md` o a un ADR de este repo, y se acuerdan en retro.|
+|**DOC-04**|**`DEFINITION-OF-DONE.md` es la fuente única del DoD** (issue #39). `CosteAR-backend` y `CosteAR-frontend` NO tienen copia: su `CLAUDE.md` trae un resumen operativo (Nivel 1) que enlaza acá, y el briefing de los tres repos imprime ese mismo resumen + link en cada sesión. Si el DoD cambia, se edita **solo acá** — las otras dos copias son un resumen, no una copia completa, así que no hay nada que sincronizar a mano.|
 
 ---
 
@@ -185,7 +186,8 @@ solo al tocar `bitacora/`.
 |---|---|---|
 |**REV-05**|**Leer los ADR, no el código.** `docs/adr/` es el lugar pensado para revisar sin ser programador: ahí está la decisión, las alternativas descartadas y el costo de cada una. **Discutirlos es la forma de revisar.**|Un PR de 800 líneas no se revisa. Un ADR de una página, sí.|
 |**REV-06**|**Cuando alguien diga "verificado", preguntar cómo.** Es una pregunta de diez segundos y caza la mayoría de los errores.|Esa pregunta habría encontrado el bug de las migraciones antes que el CI.|
-|**REV-07**|**No mergear el mismo día que se abre el PR.** Mínimo 24 horas, salvo que haya algo roto en producción.|La mitad de los problemas del 18-08 salieron de mergear rápido y en cadena.|
+|**REV-07** ⛔ SUPERADA (30-08-2026)|~~No mergear el mismo día que se abre el PR. Mínimo 24 horas.~~ **Ya no aplica.** Reemplazada por REV-09.|Se escribió el 18-08, cuando la única verificación era `npm test` y el review dependía de que alguien se acordara. Las 24 horas compraban tiempo de mirada humana porque no había otra cosa. Hoy la reemplazan mecanismos: CI obligatorio en las tres ramas con `enforce_admins`, E2E en cuatro viewports, `strict`, y el merge automático que verifica todo antes de tocar nada. **Y el costo pasó a ser mayor que el beneficio:** con varios agentes en paralelo, una cola de PRs esperando 24 horas se desactualiza sola y genera los conflictos que la espera venía a evitar.|
+|**REV-09**|**Un PR entra apenas está verde, al día con su base y sin conflictos.** No se espera. Lo que antes compraban las 24 horas ahora lo compra el CI, y lo que la espera costaba —PRs acumulados que se pisan entre sí— ya no se paga.|Santiago, 30-08-2026|
 |**REV-08**|**Los PRs apilados se mergean en orden, de abajo hacia arriba.** Y después se verifica que el trabajo llegó a `dev`, no solo que el PR figura como *merged*.|Dos PRs se mergearon contra su rama base. GitHub los marcó en verde y el trabajo quedó en ramas que ya nadie miraba.|
 
 ### Sobre el conocimiento
