@@ -52,3 +52,5 @@ pr,issue,autor,base,abierto,mergeado,horas,archivos,agregadas,borradas,corridas_
 74,,SantiagoBriz,dev,2026-09-02T15:59:52Z,2026-09-02T16:12:35Z,0.2,2,62,2,5,0,,,
 75,,SantiagoBriz,dev,2026-09-02T17:07:08Z,2026-09-02T17:29:58Z,0.4,1,108,9,5,0,,,
 76,,SantiagoBriz,staging,2026-09-03T02:07:19Z,2026-09-03T02:12:59Z,0.1,26,1884,323,5,0,,20,docs/sesiones/2026-08-31-46-fixture-sesion-admin-e2e.md
+77,,SantiagoBriz,dev,2026-09-04T13:13:17Z,2026-09-04T13:31:11Z,0.3,1,279,122,15,2,,,
+79,,SantiagoBriz,dev,2026-09-04T13:35:16Z,2026-09-04T14:07:01Z,0.5,1,136,11,9,0,,,
