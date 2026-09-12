@@ -2,7 +2,7 @@
 issue: 94
 repo: CosteAR-admin
 pr: 96
-minutos: 18
+minutos: 26
 tokens: no-informado
 clears: 0
 intentos_hasta_verde: 2
@@ -75,7 +75,7 @@ Playwright volvió a fallar dos veces seguidas sólo en Windows. La primera corr
 `2 failed, 2 skipped, 24 passed`; la segunda con `3 failed, 2 skipped, 23 passed`. Son timeouts de
 Chromium durante navegación o cierre del contexto y coinciden con el issue abierto #93. No se
 tocaron tests ni timeouts para ocultarlo; el contraste en Actions/Linux queda pendiente del CI del
-PR #96.
+PR #96. La corrida de Actions/Linux del mismo SHA pasó completa.
 
 ## Con qué se verificó
 
@@ -102,4 +102,13 @@ npm run test:e2e (Windows local, primera corrida)
 npm run test:e2e (Windows local, segunda corrida)
   3 failed, 2 skipped, 23 passed
   Hallazgo existente: CosteAR-admin#93
+
+npm run test:e2e (GitHub Actions/Linux, run 34714417176)
+  Running 28 tests using 1 worker
+  2 skipped
+  26 passed (3.0m)
+
+CI de las réplicas publicadas
+  CosteAR-backend PR #343: build-and-test, e2e-tests e integration-tests en verde
+  CosteAR-frontend PR #161: build-and-test, e2e y Vercel en verde
 ```
