@@ -31,14 +31,25 @@ FIN = WORKFLOW.index("\n            # YA NO ESTA ATRASADO", INICIO)
 BLOQUE = textwrap.dedent(WORKFLOW[INICIO:FIN])
 
 
-def ejecutar(nombre, filas, token, update_rc, esperados, rc_esperado):
+def ejecutar(
+    nombre,
+    filas,
+    token,
+    update_rc,
+    actualizaciones_esperadas,
+    merges_esperados,
+    rc_esperado,
+):
     """Ejecuta el fragmento real y valida efectos, salida y codigo final."""
     with tempfile.TemporaryDirectory() as tmp:
         actualizaciones = "actualizaciones.txt"
+        merges = "merges.txt"
         script = f"""\
 set -uo pipefail
 actualizaciones={shlex.quote(actualizaciones)}
+merges={shlex.quote(merges)}
 token_update_rc={update_rc}
+falla_pat_ocurrio=0
 gh() {{
   if [ "$1 $2" = "pr view" ]; then
     case "$*" in
@@ -68,7 +79,9 @@ for fila in {' '.join(shlex.quote('|'.join(map(str, fila))) for fila in filas)};
   IFS='|' read -r n base atras <<<"$fila"
   estado=CLEAN
 {textwrap.indent(BLOQUE, '  ')}
+  printf '%s\\n' "$n" >> "$merges"
 done
+[ "$falla_pat_ocurrio" -eq 0 ] || exit 1
 """
         ruta_script = os.path.join(tmp, "caso.sh")
         io.open(ruta_script, "w", encoding="utf-8", newline="\n").write(script)
@@ -80,13 +93,22 @@ done
             hechos = io.open(ruta_actualizaciones, encoding="utf-8").read().split()
         else:
             hechos = []
+        ruta_merges = os.path.join(tmp, merges)
+        if os.path.exists(ruta_merges):
+            mergeados = io.open(ruta_merges, encoding="utf-8").read().split()
+        else:
+            mergeados = []
         salida = resultado.stdout + resultado.stderr
 
     errores = []
     if resultado.returncode != rc_esperado:
         errores.append(f"codigo={resultado.returncode}, esperado={rc_esperado}")
-    if hechos != [str(n) for n in esperados]:
-        errores.append(f"update-branch={hechos}, esperado={esperados}")
+    if hechos != [str(n) for n in actualizaciones_esperadas]:
+        errores.append(
+            f"update-branch={hechos}, esperado={actualizaciones_esperadas}"
+        )
+    if mergeados != [str(n) for n in merges_esperados]:
+        errores.append(f"merge={mergeados}, esperado={merges_esperados}")
     if rc_esperado != 0 and "CIRCUITO_PAT" not in salida:
         errores.append("la falla no nombra CIRCUITO_PAT")
 
@@ -104,7 +126,8 @@ fallos = 0
 
 # La lista debe traer la fecha y ordenarse antes del while. Si se confia en el
 # orden por defecto de GitHub, el PR elegido puede ser el mas nuevo.
-prefijo_loop = WORKFLOW[:WORKFLOW.index(" | while read -r pr;")]
+inicio_loop = WORKFLOW.index("while read -r pr;")
+prefijo_loop = WORKFLOW[:inicio_loop]
 orden_ok = "createdAt" in prefijo_loop and "sort_by(.createdAt)" in prefijo_loop
 if orden_ok:
     print("  OK   los candidatos se ordenan del mas viejo al mas nuevo")
@@ -112,12 +135,24 @@ else:
     print("FALLA  no hay un orden explicito por createdAt antes de recorrer los PR")
     fallos += 1
 
+falla_diferida_ok = (
+    "falla_pat_ocurrio=0" in prefijo_loop
+    and 'done < <(echo "$pendientes" | jq -c \'.[]\')' in WORKFLOW[inicio_loop:]
+    and 'if [ "$falla_pat_ocurrio" -ne 0 ]; then' in WORKFLOW[inicio_loop:]
+)
+if falla_diferida_ok:
+    print("  OK   la falla del PAT se informa despues de recorrer toda la cola")
+else:
+    print("FALLA  el workflow no difiere el rojo del PAT hasta despues del bucle")
+    fallos += 1
+
 fallos += ejecutar(
     "sin secreto: falla visible y no empuja",
     [(11, "dev", 2)],
     token="",
     update_rc=0,
-    esperados=[],
+    actualizaciones_esperadas=[],
+    merges_esperados=[],
     rc_esperado=1,
 )
 fallos += ejecutar(
@@ -125,7 +160,17 @@ fallos += ejecutar(
     [(11, "dev", 2)],
     token="vencido",
     update_rc=1,
-    esperados=[11],
+    actualizaciones_esperadas=[11],
+    merges_esperados=[],
+    rc_esperado=1,
+)
+fallos += ejecutar(
+    "sin secreto, dos PR: el atrasado no bloquea al que esta al dia",
+    [(11, "dev", 2), (12, "dev", 0)],
+    token="",
+    update_rc=0,
+    actualizaciones_esperadas=[],
+    merges_esperados=[12],
     rc_esperado=1,
 )
 fallos += ejecutar(
@@ -133,7 +178,8 @@ fallos += ejecutar(
     [(11, "dev", 2), (12, "dev", 1)],
     token="presente",
     update_rc=0,
-    esperados=[11],
+    actualizaciones_esperadas=[11],
+    merges_esperados=[],
     rc_esperado=0,
 )
 fallos += ejecutar(
@@ -141,7 +187,8 @@ fallos += ejecutar(
     [(21, "staging", 3), (22, "main", 4)],
     token="presente",
     update_rc=0,
-    esperados=[],
+    actualizaciones_esperadas=[],
+    merges_esperados=[],
     rc_esperado=0,
 )
 
