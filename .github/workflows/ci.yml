@@ -45,6 +45,9 @@ jobs:
       - name: Los workflows tienen que ser YAML valido
         run: python3 scripts/chequear-workflows.py .github/workflows/*.yml
 
+      - name: El auto-merge maneja los PR atrasados sin abrir la puerta
+        run: python3 scripts/probar-auto-merge-atrasados.py .github/workflows/auto-merge.yml
+
       - name: Typecheck
         run: npm run typecheck
 
