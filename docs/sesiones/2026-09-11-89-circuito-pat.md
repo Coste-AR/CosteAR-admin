@@ -109,10 +109,10 @@ npm run test:e2e (Windows local, dos corridas consecutivas)
 Hallazgo separado: #93
 
 Paridad normalizada del script ejecutable y disparadores
-CosteAR-admin    1f0e99b3f16de3853d57b192246e06ce035cdbda340b44e
-CosteAR-backend  1f0e99b3f16de3853d57b192246e06ce035cdbda340b44e
-CosteAR-frontend 1f0e99b3f16de3853d57b192246e06ce035cdbda340b44e
-CosteAR-os       1f0e99b3f16de3853d57b192246e06ce035cdbda340b44e
+CosteAR-admin    1f0e99b3f16de3853d57b192246e06ce035cdbda340b44c4ca45a0e5061e6b54
+CosteAR-backend  1f0e99b3f16de3853d57b192246e06ce035cdbda340b44c4ca45a0e5061e6b54
+CosteAR-frontend 1f0e99b3f16de3853d57b192246e06ce035cdbda340b44c4ca45a0e5061e6b54
+CosteAR-os       1f0e99b3f16de3853d57b192246e06ce035cdbda340b44c4ca45a0e5061e6b54
 PARIDAD EXACTA: 4/4 local
 
 GitHub Actions — camino rojo deliberado
