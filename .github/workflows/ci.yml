@@ -48,6 +48,9 @@ jobs:
       - name: El auto-merge maneja los PR atrasados sin abrir la puerta
         run: python3 scripts/probar-auto-merge-atrasados.py .github/workflows/auto-merge.yml
 
+      - name: G7 falla cerrado sin revelar identificadores
+        run: python3 scripts/probar-g7.py
+
       - name: Typecheck
         run: npm run typecheck
 
