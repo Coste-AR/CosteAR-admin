@@ -1,0 +1,12 @@
+# LISTA PRIVADA DE IDENTIFICADORES PROTEGIDOS POR G7
+#
+# Un termino por linea. Este archivo vive solo en CosteAR-admin porque el repo es
+# privado. No copiarlo, resumirlo, hashearlo ni derivarlo hacia backend, frontend,
+# logs, comentarios de PR o artefactos de Actions.
+#
+# Los dos valores siguientes son ficticios y existen solamente para verificar la
+# guarda. Una persona los reemplaza por la lista real en un commit posterior al
+# merge de #91.
+
+Puerto Neblina
+Proveedor Cometa
