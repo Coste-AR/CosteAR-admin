@@ -30,6 +30,7 @@
 import { execFileSync } from 'node:child_process';
 import { readFileSync, existsSync } from 'node:fs';
 import { join } from 'node:path';
+import { leerMensajesAgente, leerModoTrabajo } from './briefing-data.mjs';
 
 const RAIZ = process.env.CLAUDE_PROJECT_DIR ?? process.cwd();
 
@@ -96,6 +97,37 @@ const git = (...args) => correr('git', args);
 /** `gh` puede no estar instalado o no estar autenticado: los dos casos son `null`. */
 const gh = (...args) => correr('gh', args, 8000);
 
+let repoActual;
+const consultarBriefing = (clave, contexto = {}) => {
+  if (clave === 'repo') {
+    repoActual ??= gh('repo', 'view', '--json', 'nameWithOwner', '--jq', '.nameWithOwner');
+    return repoActual;
+  }
+
+  const repo = contexto.repo ?? consultarBriefing('repo');
+  if (!repo) return null;
+
+  if (clave === 'modo') {
+    return gh('variable', 'get', 'MODO_TRABAJO', '-R', repo);
+  }
+  if (clave === 'issues:listo' || clave === 'issues:bloqueado') {
+    return gh(
+      'issue', 'list', '-R', repo, '--state', 'open', '--label', clave.split(':')[1],
+      '--limit', '1000', '--json', 'number',
+    );
+  }
+  if (clave === 'prs') {
+    return gh('pr', 'list', '-R', repo, '--state', 'open', '--limit', '1000', '--json', 'number');
+  }
+  if (clave === 'comments') {
+    return gh(
+      'api', '--paginate', '--slurp',
+      `repos/${repo}/issues/comments?since=${encodeURIComponent(contexto.desde)}&per_page=100`,
+    );
+  }
+  return null;
+};
+
 const lineas = [];
 const agregar = (l = '') => lineas.push(l);
 
@@ -107,6 +139,7 @@ if (!rama) {
   process.exit(0);
 }
 
+agregar(leerModoTrabajo(consultarBriefing));
 agregar('━━━ CosteAR · briefing de sesión ━━━');
 agregar();
 
@@ -171,6 +204,19 @@ if (yo) {
     for (const i of issues.split('\n').filter(Boolean)) agregar(`  ${i}`);
   }
 }
+
+// ── Mensajes de la orquestación ────────────────────────────────────────────
+const mensajesAgente = leerMensajesAgente(consultarBriefing);
+agregar();
+if (mensajesAgente.mensajes.length) {
+  agregar('Mensajes para vos:');
+  for (const mensaje of mensajesAgente.mensajes) {
+    for (const linea of mensaje.split('\n')) agregar(`  ${linea}`);
+  }
+} else {
+  agregar('Mensajes para vos: ninguno');
+}
+for (const error of mensajesAgente.errores) agregar(`⚠️  ${error}`);
 
 // ── El mensaje del orquestador ──────────────────────────────────────────────
 //
