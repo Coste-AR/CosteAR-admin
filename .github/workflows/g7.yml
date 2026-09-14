@@ -1,0 +1,158 @@
+# G7 es el guardian privado de datos de cliente para los repos publicos.
+#
+# CONTRATO CON BACKEND Y FRONTEND
+# Entrada: repository_dispatch `g7-revisar`, payload `{repo, pr, sha}`.
+# Salida: commit status con context EXACTO `G7/datos-de-cliente` sobre `sha`.
+# - pending: G7 acepto la solicitud y esta midiendo.
+# - success: pudo leer las cuatro superficies y no encontro coincidencias.
+# - failure: encontro coincidencias o no pudo medir. Sin success, el publico no etiqueta.
+#
+# El comentario enumera solo ubicaciones. Nunca contiene el identificador ni el
+# texto leido. Si CIRCUITO_PAT falta o es invalido no se puede escribir el status:
+# el consumidor queda fail-closed esperando y el error queda visible aca.
+name: G7 - datos de cliente
+
+on:
+  repository_dispatch:
+    types: [g7-revisar]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: g7-${{ github.event.client_payload.repo }}-${{ github.event.client_payload.pr }}-${{ github.event.client_payload.sha }}
+  cancel-in-progress: true
+
+jobs:
+  revisar:
+    name: G7/datos-de-cliente
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Revisar y publicar el veredicto
+        env:
+          GH_TOKEN: ${{ secrets.CIRCUITO_PAT }}
+          REPO_SOLICITADO: ${{ github.event.client_payload.repo }}
+          PR_SOLICITADO: ${{ github.event.client_payload.pr }}
+          SHA_SOLICITADO: ${{ github.event.client_payload.sha }}
+          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+        run: |
+          set -uo pipefail
+
+          contexto='G7/datos-de-cliente'
+          lista='.github/g7-identificadores-protegidos.txt'
+          temporal=$(mktemp -d)
+
+          if [ -z "${GH_TOKEN:-}" ]; then
+            echo "::error::CIRCUITO_PAT no esta disponible. G7 no puede leer el PR ni publicar el status; el repositorio publico queda fail-closed."
+            exit 1
+          fi
+
+          case "${REPO_SOLICITADO:-}" in
+            Coste-AR/CosteAR-backend|Coste-AR/CosteAR-frontend) ;;
+            *)
+              echo "::error::Repositorio no permitido o ausente. G7 no ejecuta solicitudes fuera de los dos repos publicos."
+              exit 1 ;;
+          esac
+
+          if ! [[ "${PR_SOLICITADO:-}" =~ ^[0-9]+$ ]] || ! [[ "${SHA_SOLICITADO:-}" =~ ^[0-9a-fA-F]{40}$ ]]; then
+            echo "::error::Payload invalido: pr debe ser numerico y sha debe tener 40 caracteres hexadecimales."
+            exit 1
+          fi
+
+          publicar_estado() {
+            local estado="$1" descripcion="$2"
+            gh api --method POST "repos/$REPO_SOLICITADO/statuses/$SHA_SOLICITADO" \
+              -f state="$estado" -f context="$contexto" \
+              -f description="$descripcion" -f target_url="$RUN_URL" >/dev/null
+          }
+
+          comentar_una_vez() {
+            local clase="$1" cuerpo="$2" marca
+            marca="<!-- g7:$SHA_SOLICITADO:$clase -->"
+            if gh pr view "$PR_SOLICITADO" --repo "$REPO_SOLICITADO" --json comments --jq '.comments[].body' 2>/dev/null | grep -qF "$marca"; then
+              echo "El PR ya tiene el comentario G7 para este SHA y resultado; no se repite."
+              return 0
+            fi
+            gh pr comment "$PR_SOLICITADO" --repo "$REPO_SOLICITADO" --body "$(printf '%s\n%s\n' "$marca" "$cuerpo")" >/dev/null
+          }
+
+          if ! publicar_estado pending 'G7 esta revisando el cambio'; then
+            echo "::error::CIRCUITO_PAT no pudo publicar el status inicial. Puede estar vencido o no tener permisos; el publico queda fail-closed."
+            exit 1
+          fi
+
+          if ! gh pr view "$PR_SOLICITADO" --repo "$REPO_SOLICITADO" \
+            --json baseRefName,headRefOid,title,body,commits >"$temporal/pr.json"; then
+            publicar_estado failure 'G7 no pudo leer el PR' || true
+            echo "::error::G7 no pudo leer titulo, cuerpo o commits."
+            exit 1
+          fi
+
+          base=$(jq -r '.baseRefName // ""' "$temporal/pr.json")
+          head=$(jq -r '.headRefOid // ""' "$temporal/pr.json")
+          if [ "$base" != "dev" ] || [ "$head" != "$SHA_SOLICITADO" ]; then
+            publicar_estado failure 'G7 recibio una referencia que no coincide con el PR' || true
+            comentar_una_vez referencia '**G7 no pudo validar esta version del PR.** La base debe ser `dev` y el SHA solicitado debe coincidir con el head actual. No se habilita `auto-merge`.' || true
+            echo "::error::La base o el SHA ya no coinciden con el PR."
+            exit 1
+          fi
+
+          if ! gh pr diff "$PR_SOLICITADO" --repo "$REPO_SOLICITADO" >"$temporal/cambio.diff"; then
+            publicar_estado failure 'G7 no pudo leer el diff' || true
+            comentar_una_vez lectura '**G7 no pudo leer todas las superficies del PR.** El veredicto es `failure`; queda para una persona.' || true
+            echo "::error::G7 no pudo leer el diff."
+            exit 1
+          fi
+
+          if ! python3 scripts/g7_guardian.py --lista "$lista" \
+            --pr-json "$temporal/pr.json" --diff "$temporal/cambio.diff" \
+            --resultado "$temporal/resultado.json"; then
+            publicar_estado failure 'G7 no pudo evaluar el contenido' || true
+            comentar_una_vez evaluacion '**G7 no pudo completar la evaluacion.** El veredicto es `failure`; queda para una persona.' || true
+            exit 1
+          fi
+
+          veredicto=$(jq -r '.verdict' "$temporal/resultado.json")
+          motivo=$(jq -r '.reason' "$temporal/resultado.json")
+
+          if [ "$veredicto" = "success" ]; then
+            if ! publicar_estado success 'G7 no encontro identificadores protegidos'; then
+              echo "::error::CIRCUITO_PAT no pudo publicar el veredicto success; el publico queda fail-closed."
+              exit 1
+            fi
+            echo "G7 termino: success. No se publica el material inspeccionado."
+            exit 0
+          fi
+
+          if [ "$motivo" = "matches" ]; then
+            total=$(jq -r '.total' "$temporal/resultado.json")
+            ubicaciones=$(jq -r '.findings[] | "- " + .' "$temporal/resultado.json")
+            mostradas=$(jq -r '.findings | length' "$temporal/resultado.json")
+            extra=''
+            if [ "$total" -gt "$mostradas" ]; then
+              extra=$(printf '\n- y %s ubicacion(es) mas; se limita el comentario para mantenerlo legible.' "$((total - mostradas))")
+            fi
+            cuerpo=$(printf '**G7 encontro %s coincidencia(s) con identificadores protegidos.** El veredicto es `failure`; no se habilita `auto-merge`.\n\nUbicaciones (el identificador no se muestra):\n%s%s' "$total" "$ubicaciones" "$extra")
+            if ! publicar_estado failure 'G7 encontro identificadores protegidos'; then
+              echo "::error::CIRCUITO_PAT no pudo publicar el veredicto failure; el publico queda fail-closed."
+              exit 1
+            fi
+            comentar_una_vez coincidencias "$cuerpo" || echo "::warning::No se pudo comentar; las ubicaciones quedan en el resultado privado de la corrida."
+            echo "G7 termino: failure por coincidencias. No se publica el material inspeccionado."
+            exit 0
+          fi
+
+          case "$motivo" in
+            list_missing) detalle='la lista privada no existe' ;;
+            list_empty) detalle='la lista privada no tiene identificadores' ;;
+            *) detalle='la configuracion privada no es valida' ;;
+          esac
+          if ! publicar_estado failure 'G7 no tiene una lista privada utilizable'; then
+            echo "::error::CIRCUITO_PAT no pudo publicar el failure de configuracion; el publico queda fail-closed."
+            exit 1
+          fi
+          comentar_una_vez configuracion "**G7 no pudo medir: $detalle.** El veredicto es \`failure\`; queda para una persona." || echo "::warning::No se pudo comentar el error de configuracion."
+          echo "::error::G7 termino fail-closed porque la lista privada no es utilizable."
+          exit 1

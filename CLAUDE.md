@@ -204,6 +204,7 @@ Por eso `/costear-bitacora` al cerrar una sesión (DOC-03) y el ADR en el mismo 
 
 |Fecha|Qué cambió|Fuente|
 |---|---|---|
+|2026-09-13|**CLI-03 deja de depender de acordarse de correr `git grep`.** G7 revisa las cuatro superficies del PR desde este repo privado y emite el status `G7/datos-de-cliente`; los repos públicos sólo esperan ese veredicto y nunca reciben la lista.|CosteAR-admin#91, decisión del Owner del 13-09-2026|
 |2026-08-22|**0.bis sale de acá.** La filosofía (diagnosticar/planificar/implementar) cargaba en TODAS las sesiones sin importar la tarea. El resumen operativo queda inline; la versión completa vive en `CosteAR-admin/docs/2026-08-22-filosofia-diagnosticar-planificar-implementar.md` (espejo del Second Brain de Santiago, que es la fuente canónica). Se evaluó y descartó ponerla en `costear-knowledge-base`: ese repo alimenta el RAG del clasificador y mete cualquier `.md` al índice — se habría mezclado con la doctrina de costeo.|Santiago|
 |2026-08-22|**Pieza 1 — BIT-01..06 se mudan a `.claude/rules/bitacora.md`**, scoped a `bitacora/**`. Antes cargaban en todas las sesiones; ahora solo al tocar la bitácora.|Santiago|
 |2026-08-22|**PR-04/05/06**: el PR nace en draft, se mergea con `--auto`, y después se verifica que el trabajo llegó. Reemplazan por mecanismo lo que REV-08 pedía recordar. La skill `/costear-pr` ya crea los PRs en borrador.|Santiago|
@@ -221,7 +222,7 @@ Por eso `/costear-bitacora` al cerrar una sesión (DOC-03) y el ADR en el mismo 
 |---|---|
 |**CLI-01**|**Los datos de un cliente no entran a un repositorio público.** Ni su nombre, ni su localidad, ni sus números reales — no en tests, no en seeds, no en comentarios, no en ejemplos, no en cuerpos de PR ni en mensajes de commit.|
 |**CLI-02**|Un fixture que necesita números realistas usa **datos ficticios** que ejerciten la misma matemática. El caso real, si hace falta conservarlo, va a `CosteAR-admin` (privado).|
-|**CLI-03**|Antes de abrir un PR que toque un vertical de un cliente: `git grep -in "<nombre del cliente>"`. Si devuelve algo, no se abre.|
+|**CLI-03**|**G7 verifica automáticamente** el diff, título, cuerpo y mensajes de commit de cada PR de los repos públicos antes de que pueda recibir `auto-merge`. Publica el status `G7/datos-de-cliente`; sin `success`, el PR queda para una persona. La lista de identificadores vive sólo en este repo privado.|
 |**CLI-04**|Esto incluye la estructura económica: costo unitario, punto de equilibrio, precio de venta, márgenes y escala. **Que un competidor pueda leer el margen de un productor es un problema para él, no para nosotros.**|
 
 > **Ya pasó** (18-08-2026): se subió la estructura de costos completa de un cliente, con su nombre
