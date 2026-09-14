@@ -1,7 +1,7 @@
 ---
 issue: 98
 repo: CosteAR-admin
-pr: 98
+pr: 100
 rama: feat/briefing-modo-mensajes
 agente: codex
 modelo: gpt-5.6-sol
