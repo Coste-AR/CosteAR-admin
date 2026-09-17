@@ -67,7 +67,7 @@ npm run skills:sync  # propaga las skills de este repo a backend y frontend
 |ID|Regla|Fuente|
 |---|---|---|
 |**CMD-01**|**`npm` siempre.**|Equipo|
-|**CMD-02**|⚠️ **Este repo todavía no tiene ESLint ni un solo test.** Por eso su CI corre solo `typecheck` + `build`. Si agregás tests o eslint, actualizá `.github/workflows/ci.yml` y este archivo.|Santiago, 15-08-2026|
+|**CMD-02**|⚠️ **Este repo todavía no tiene ESLint.** Los tests del briefing usan `node:test`, los de UI usan Playwright, y el CI corre `npm test` + `typecheck` + `build`. Si agregás ESLint, actualizá `.github/workflows/ci.yml` y este archivo.|CosteAR-admin#98, 13-09-2026|
 
 ---
 
@@ -204,6 +204,7 @@ Por eso `/costear-bitacora` al cerrar una sesión (DOC-03) y el ADR en el mismo 
 
 |Fecha|Qué cambió|Fuente|
 |---|---|---|
+|2026-09-13|**CMD-02 deja de afirmar que no hay tests.** El test automatizado del briefing entra en `npm test` y en CI.|CosteAR-admin#98|
 |2026-09-13|**CLI-03 deja de depender de acordarse de correr `git grep`.** G7 revisa las cuatro superficies del PR desde este repo privado y emite el status `G7/datos-de-cliente`; los repos públicos sólo esperan ese veredicto y nunca reciben la lista.|CosteAR-admin#91, decisión del Owner del 13-09-2026|
 |2026-08-22|**0.bis sale de acá.** La filosofía (diagnosticar/planificar/implementar) cargaba en TODAS las sesiones sin importar la tarea. El resumen operativo queda inline; la versión completa vive en `CosteAR-admin/docs/2026-08-22-filosofia-diagnosticar-planificar-implementar.md` (espejo del Second Brain de Santiago, que es la fuente canónica). Se evaluó y descartó ponerla en `costear-knowledge-base`: ese repo alimenta el RAG del clasificador y mete cualquier `.md` al índice — se habría mezclado con la doctrina de costeo.|Santiago|
 |2026-08-22|**Pieza 1 — BIT-01..06 se mudan a `.claude/rules/bitacora.md`**, scoped a `bitacora/**`. Antes cargaban en todas las sesiones; ahora solo al tocar la bitácora.|Santiago|
