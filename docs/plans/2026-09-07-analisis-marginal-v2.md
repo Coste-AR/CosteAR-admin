@@ -1579,9 +1579,14 @@ Se conservan los seis de la v1 y se agregan cinco.
 
 - **K.** ➕ ¿Quién declara el **techo físico** del tramo actual de cada tenant, y con qué evidencia? Para la avícola es la capacidad del galpón (6.300–6.400 blancas, confirmada el 14-08). Sin ese dato el sistema no puede decir "este equilibrio no existe en tu tramo", que es el punto entero de la tarea.
 
-**Bloquean `M11-01`:**
+**Bloqueaban `M11-01` — resuelta el 18-09-2026 (Santiago, vía orquestación; copiada al cuerpo de `CosteAR-backend#374`):**
 
-- **J.** ➕ ¿Qué serie de índice de precios se usa como coeficiente corrector (IPC, IPIM, una propia del cliente), quién la carga y con qué frecuencia? Y qué pasa con los períodos anteriores a la carga de la serie.
+- **J.** ✅ ¿Qué serie de índice de precios se usa como coeficiente corrector, quién la carga, con qué frecuencia y qué pasa con los períodos anteriores? **Decisión mínima:**
+  1. **Una serie por empresa (tenant).** No hay serie global ni varias por empresa; la fuente (IPC, IPIM o propia) es un dato descriptivo de la serie, no cambia el modelo.
+  2. **Carga manual, mensual, por la cuenta dueña de la empresa.** Sin proveedor externo en esta tanda.
+  3. **Período sin valor en la serie (anterior a la carga o hueco): queda nominal y marcado** como no homogeneizado en la respuesta; no se rechaza ni se extrapola.
+  4. **Corrección de un índice = versión nueva, append-only.** Cada cálculo guarda el id de versión de la serie que usó; nunca se reescribe un valor.
+  Por qué la mínima: es política de negocio que el cliente todavía no pidió afinar; lo que importa para R33/R34/R35 es que el cálculo sea trazable y que un período sin índice no se disfrace de homogéneo.
 
 **No bloquean, pero conviene cerrarlas:**
 
