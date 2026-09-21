@@ -1575,9 +1575,15 @@ Se conservan los seis de la v1 y se agregan cinco.
 - **H.** 🔴 **¿La base de aplicación del CIP pasa a medir eficiencia (unidades, producto representativo) en vez de tiempo trabajado?** R11 y R23 lo exigen; el motor usa horas; cambiarlo toca el motor auditado. Es una decisión de motor que ninguno de los dos planes puede tomar solo.
 - **I.** ¿Cuál es el valor por default de `idleCapacity.destination`? De eso depende si `O1-03` es una tarea de motor o de UI, y si `M7-01` tiene que advertir de doble conteo.
 
-**Bloquean `M10-01`:**
+**Bloqueaba `M10-01` — resuelta el 21-09-2026 (Santiago, vía orquestación; copiada al cuerpo de `CosteAR-backend#380`):**
 
-- **K.** ➕ ¿Quién declara el **techo físico** del tramo actual de cada tenant, y con qué evidencia? Para la avícola es la capacidad del galpón (6.300–6.400 blancas, confirmada el 14-08). Sin ese dato el sistema no puede decir "este equilibrio no existe en tu tramo", que es el punto entero de la tarea.
+- **K.** ✅ ¿Quién declara el **techo físico** del tramo actual de cada tenant, y con qué evidencia? Para la avícola es la capacidad del galpón (6.300–6.400 blancas, confirmada el 14-08). **Decisión: lo declara a mano la cuenta dueña (`EMPRESA_ADMIN`), con fuente obligatoria y versionado**, mismo patrón que la J:
+  1. `techoFisico` es el campo de `TramoCosto` que ya modela `#380`; se carga por el mismo endpoint que crea el tramo, acompañado de `techoFuente` (texto obligatorio, no vacío: «capacidad de los 4 galpones según el ingeniero, 14-08»), `techoDeclaradoEn` y `techoDeclaradoPor`.
+  2. **Corregir el techo = versión nueva del tramo, append-only.** Cada cálculo persiste el id de versión que usó; nunca se reescribe.
+  3. Sin `techoFisico` cargado → tramo de rango infinito y los números de hoy (cero regresión).
+  4. **No se deriva de capacidad registrada:** no existe ese dato (el único `capacidad` del schema es el de `Deposito`, almacén; `UnidadProductiva` no tiene ninguno). Si el cliente lo pide, es un issue aparte de capacidad productiva por unidad/segmento; fuera de B3.
+  Por qué la mínima: el techo es un hecho del cliente (galpones, contrato, turnos) que el sistema no puede inferir sin un modelo que no tiene; lo que piden R29/R31 es trazabilidad (quién, con qué respaldo, qué versión usó cada cálculo), no automatismo.
+  Cómo se sabe que quedó bien (con el camino de falla): tramo con `techoFisico` sin `techoFuente` → 400 con el campo nombrado; corregir el techo no altera un cálculo ya hecho y el nuevo referencia la versión nueva; empresa sin tramos = números de hoy.
 
 **Bloqueaban `M11-01` — resuelta el 18-09-2026 (Santiago, vía orquestación; copiada al cuerpo de `CosteAR-backend#374`):**
 
