@@ -23,6 +23,11 @@ Que el CI esté en verde depende de vos. No es una formalidad: es lo único que 
 npm run briefing
 ```
 
+Antes de leer el issue, leé la [Constitución de CosteAR](https://github.com/Coste-AR/CosteAR-os/blob/dev/CONSTITUCION.md)
+del repo `Coste-AR/CosteAR-os`: es una página con diez principios. Si el issue contradice la
+Constitución, el issue está mal: decilo en el issue y no lo hagas. Cuando tomes una decisión sobre
+la marcha, citá en la bitácora el principio aplicado (`Constitución §N`).
+
 Te imprime en qué estado está el proyecto **ahora**: en qué rama estás, si tu copia quedó atrás
 de `origin/dev`, qué PRs tuyos hay abiertos, qué issues tenés asignados, y el `ESTADO.md` con lo
 que está pasando esta semana — incluidos los tests flaky conocidos, para que no pierdas media hora
@@ -186,5 +191,6 @@ y no declara qué cambió queda esperando a una persona.
 
 |Fecha|Qué cambió|Fuente|
 |---|---|---|
+|2026-09-22|Se exige leer la Constitución antes del issue, rechazar contradicciones y citar en la bitácora el principio aplicado a cada decisión tomada durante el trabajo.|CosteAR-admin#102|
 |2026-09-13|El briefing incorpora el modo de trabajo y los mensajes `/agente`; se explicita que el mensaje del issue elegido se lee antes de tocar código.|CosteAR-admin#98|
 |2026-09-04|**Se agrega "Antes de decir que algo ya está resuelto".** Un triage recomendó cerrar un issue afirmando que el commit ya estaba en `dev`; estaba sólo en una rama sin PR, y cerrarlo habría perdido 125 líneas y un ADR. Se agregan los tres comandos que lo comprueban y qué hacer al encontrar una rama huérfana. **Y se inaugura esta tabla**, que no existía: sin ella ningún cambio a este archivo se podía auto-etiquetar.|Santiago|
