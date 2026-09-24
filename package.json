@@ -10,7 +10,7 @@
     "preview": "vite preview",
     "lint": "node -e \"console.log('Este repo todavia no tiene ESLint configurado. Ver CLAUDE.md, regla CMD-02.')\"",
     "typecheck": "tsc --noEmit",
-    "test": "vitest run --passWithNoTests",
+    "test": "node --test .claude/hooks/briefing.test.mjs && vitest run --passWithNoTests",
     "test:e2e": "playwright test",
     "test:e2e:ui": "playwright test --ui",
     "test:e2e:report": "playwright show-report",

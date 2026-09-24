@@ -6,13 +6,11 @@ on:
   pull_request:
     branches: ["dev", "staging", "main"]
 
-# Este repo todavía no tiene ESLint instalado ni archivos de test, así que el CI
-# corre typecheck + build y nada más. Poner acá `npm run lint` o `npm test` haría
-# fallar el pipeline por algo que no existe, y un CI que falla siempre es un CI
-# que el equipo aprende a ignorar.
+# Este repo todavía no tiene ESLint instalado. El CI corre el test unitario del
+# briefing, typecheck y build; la suite E2E vive en su workflow dedicado.
 #
-# Cuando se agregue ESLint o el primer test, sumar los pasos correspondientes
-# y actualizar CLAUDE.md §2 (regla CMD-02).
+# Cuando se agregue ESLint, sumar el paso correspondiente y actualizar
+# CLAUDE.md §2 (regla CMD-02).
 
 jobs:
   build-and-test:
@@ -50,6 +48,9 @@ jobs:
 
       - name: G7 falla cerrado sin revelar identificadores
         run: python3 scripts/probar-g7.py
+
+      - name: Tests unitarios
+        run: npm test
 
       - name: Typecheck
         run: npm run typecheck
